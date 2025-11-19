@@ -22,6 +22,10 @@ class TetrisArm(Node):
         self.mc = MyCobot280("/dev/ttyAMA0", 1000000)
         self.get_logger().info("Connected to arm")
 
+        # Reset arm to location [0, 0, 0, 0, 0, 0]
+        self.mc.send_angles([0, 0, 0, 0, 0, 0], 30)
+        self.get_logger().info("Reset arm")
+
         # Subscribe to desired pose
         self.subscription = self.create_subscription(
             Float32MultiArray, "/desired_pose", self.listener_callback, 10
