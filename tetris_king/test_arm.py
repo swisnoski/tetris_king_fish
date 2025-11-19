@@ -17,11 +17,13 @@ print(angles)
 mc.send_angles([0, 0, 0, 0, 0, 0], 30)
 print("Arm reset!")
 
-print("Starting IK")
+# POS 1
+
+print("Starting IK: pos 1")
 
 start_time = time.perf_counter()
 
-desired_ee = [0.1, 0.15, 0.1]
+desired_ee = [0.22, 0, 0.1]
 soln, err = inverse_kinematics([0, 0, 0, 0, 0, 0], desired_ee, tol=0.01)
 soln = util.rad2deg(soln)
 soln[5] = 0
@@ -33,4 +35,30 @@ print(soln)
 elapsed_time = end_time - start_time
 print(f"Elapsed time: {elapsed_time:.6f} seconds")
 
-mc.send_angles(soln, 30)
+if err < 0.01:
+    mc.send_angles(soln, 30)
+else:
+    print("Error too hight!")
+
+# POS 2
+
+print("Starting IK: pos 2")
+
+start_time = time.perf_counter()
+
+desired_ee = [0.22, 0, 0.05]
+soln, err = inverse_kinematics([0, 0, 0, 0, 0, 0], desired_ee, tol=0.01)
+soln = util.rad2deg(soln)
+soln[5] = 0
+
+end_time = time.perf_counter()
+
+print(err)
+print(soln)
+elapsed_time = end_time - start_time
+print(f"Elapsed time: {elapsed_time:.6f} seconds")
+
+if err < 0.01:
+    mc.send_angles(soln, 30)
+else:
+    print("Error too hight!")
