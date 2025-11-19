@@ -3,7 +3,7 @@ Module with all functions relating to the Inverse Kinematics of the robot
 """
 
 import modern_robotics as mr
-from modules.fk import forward_kinematics
+from tetris_king.modules.fk import forward_kinematics
 import numpy as np
 
 M = np.array(
