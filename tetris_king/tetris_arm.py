@@ -8,6 +8,10 @@ from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray
 
 from pymycobot import MyCobot280
+import numpy as np
+import time
+from tetris_king.modules.ik import inverse_kinematics
+import tetris_king.modules.util as util
 
 
 class TetrisArm(Node):
@@ -35,10 +39,33 @@ class TetrisArm(Node):
         """
         Get desired pose from topic, perform IK, then move arm
         """
-        self.get_logger().info(f"Desired pose: {msg.data}")
+        desired_ee = np.array(msg.data)
+        self.get_logger().info(f"Desired pose: {desired_ee}")
 
         if not self.mc.is_moving():
-            pass
+            print("Starting IK")
+
+            # track IK time for future optimization
+            start_time = time.perf_counter()
+
+            # IK
+            soln, err = inverse_kinematics([0, 0, 0, 0, 0, 0], desired_ee, tol=0.01)
+            soln = util.rad2deg(soln)
+            soln[5] = 0
+
+            end_time = time.perf_counter()
+
+            # log results
+            self.get_logger().info(f"Error: {err}")
+            self.get_logger().info(f"Soln: {soln}")
+            elapsed_time = end_time - start_time
+            self.get_logger().info(f"Elapsed time: {elapsed_time:.6f} seconds")
+
+            # Move arm
+            if err < 0.01:
+                self.mc.send_angles(soln, 30)
+            else:
+                self.get_logger().info("Error too high!")
 
 
 def main(args=None):
