@@ -23,7 +23,7 @@ print("Starting IK: pos 1")
 
 start_time = time.perf_counter()
 
-desired_ee = [0.22, 0, 0.1]
+desired_ee = [0.24, 0, 0.1]
 soln, err = inverse_kinematics([0, 0, 0, 0, 0, 0], desired_ee, tol=0.01)
 soln = util.rad2deg(soln)
 soln[5] = 0
@@ -46,7 +46,7 @@ print("Starting IK: pos 2")
 
 start_time = time.perf_counter()
 
-desired_ee = [0.22, 0, 0.05]
+desired_ee = [0.24, 0, 0.05]
 soln, err = inverse_kinematics([0, 0, 0, 0, 0, 0], desired_ee, tol=0.01)
 soln = util.rad2deg(soln)
 soln[5] = 0
