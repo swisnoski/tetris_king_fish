@@ -3,7 +3,7 @@ Module with all functions relating to the Inverse Kinematics of the robot
 """
 
 import modern_robotics as mr
-from tetris_king.modules.fk import forward_kinematics
+from modules.fk import forward_kinematics
 import numpy as np
 
 M = np.array(
@@ -91,11 +91,6 @@ def inverse_kinematics(
             0: x displacement
             1: y displacement
             2: z displacement
-
-            OR
-
-        desired_ee:Transformation matrix
-            np.array(4x4)
         tol: (float)
         max_iters: (int)
         damping: (float)
@@ -160,13 +155,12 @@ def inverse_kinematics(
             ]
         )
         err_norm = np.linalg.norm(error)
-        print(f"Iter {i:03}: error = {err_norm:.6f}")
 
         if err_norm < best_ans[1]:
             best_ans = (theta.copy(), err_norm)
 
         if err_norm < tol:
-            return theta, True  # Success
+            return theta, err_norm  # Success
 
         # Compute Jacobian and take position part
         Js = mr.JacobianSpace(S_list, theta)
@@ -190,5 +184,4 @@ def inverse_kinematics(
         else:
             theta += np.random.uniform(-1, 1, size=theta.shape)
 
-    print(f"Iter 200: error = {best_ans[1]}")
-    return best_ans[0], False  # Did not converge
+    return best_ans[0], err_norm  # Did not converge
