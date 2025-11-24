@@ -3,7 +3,7 @@
 Welcome to the Tetris King-Fish website! Tetris King-Fish consists of Ashley Yang, Bill Le, Oscar Bao, Sam Wisnoski, Satchel Schiavo, and the fish himself, Suketoudara. 
 
 <p align="center">
-  <img src="suk_sr.png" alt="Suketoudara" width="400">
+  <img src="assets/images/suk_sr.png" alt="Suketoudara" width="400">
 </p>
 
 Our goal is to build a robot that can autonomously play Puyo Puyo Tetris 2 on the Nintendo Switch 2 by using computer vision to read the game state, 
@@ -50,17 +50,21 @@ We have begun building a basic Tetris environment in Python, starting with the b
 * Next steps: implement piece spawning & controls, and then create a loop for generating and recording games for integratation with RL
 
 **3. Reinforcement Learning:**
+Through some research, we have identified some past attempts of trying to play Tetris autonomously, either through [RL](https://cs231n.stanford.edu/reports/2016/pdfs/121_Report.pdf) or a [genetic algorithm](https://github.com/LeeYiyuan/tetrisai). It seems from the preliminary research that RL is possible, but difficult, with potential challenges being an indeterminate action space and its actual capabilities compared to a more simplified algorithm. At this point, we are still committed to doing RL as it ties to our YOGAs and proposal, but we are also ready to pivot should results look dim and we need a working model.  
+* Python libraries: PyTorch
+* Current status: finished installing (major challenge cleared), moving to design model architecture and layers
+* Next steps: laying down model architecture and do preliminary training
 
 **4. Robotic Arm Controls:** 
 The MyCobot 280 arm has been integrated with ROS and we have gotten it to go to a specific pose using Inverse Kinematics. 
 The list of major project components:
-* Python Libraries: numpy, modern-robotics (for inverse-kinematics), pymycobot (to interface with MyCobot 280 hardware)
+* Python libraries: numpy, modern-robotics (for inverse-kinematics), pymycobot (to interface with MyCobot 280 hardware)
 * Current status: inverse kinematics works, arm integrated with ROS2
 * Next steps: Get arm to press specific button and ensure that it is replicable. Test arm moving joystick.
 
 **5. Testing, Integration, & Other:** 
 We've created the website to take in a markdown file, although it's still very basic for now. We've also captured test footage of a game of tetris, allowing us to test our CV algorithms.
-* Current Status: We have a good start on modular testing and the website, but most of this week was individual project work and not integration. 
+* Current status: We have a good start on modular testing and the website, but most of this week was individual project work and not integration. 
 * Next steps: We hope to have full (semi-working) integration by milestone 2 so that we can spend our last week testing and refining our system. 
 
 
@@ -68,7 +72,7 @@ We've created the website to take in a markdown file, although it's still very b
 The current state of our project can best be explained by the image of Suketoudara Jr. below: 
 
 <p align="center">
-  <img src="suk_jr.jpg" alt="Suketoudara junior" width="400">
+  <img src="assets/images/suk_jr.jpg" alt="Suketoudara junior" width="400">
 </p>
 
 Only a week into the project, our MVP remains *mostly* unchanged from our original goal. With further research into RL, it seems possible, but very challenging, to make a decent algorithm with RL. We still want to continue persuing reinforcement learning for the time being, but we are open to switching to a simpler heuristic model. Besides that, we still believe that the CV and Robotic arm are well within our capabilities.
