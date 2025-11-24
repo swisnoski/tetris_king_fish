@@ -1,4 +1,4 @@
-""" Simple script to rename our testing files """
+""" Simple script to rename our sample image files for cv testing """
 
 import os
 

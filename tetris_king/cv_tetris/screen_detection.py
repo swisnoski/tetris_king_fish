@@ -1,4 +1,8 @@
-import cv2 as cv 
+import rclpy
+from rclpy.node import Node
+import cv as cv 
+import numpy as np
+from typing import Optional, List, Dict, Tuple
 
 # ----------- Detecting TV screen -----------
 def detect_TV():
@@ -56,14 +60,6 @@ def show_close(caption, img):
     cv.waitKey(0)
     cv.destroyAllWindows()
 
-if __name__ == "__main__":
-    detect_TV()
-import rclpy
-from rclpy.node import Node
-import cv2
-import numpy as np
-from typing import Optional, List, Dict, Tuple
-
 # --- Grid constants ---
 GRID_WIDTH = 10
 GRID_HEIGHT = 20
@@ -96,7 +92,7 @@ class TetrisGridDetector(Node):
 
         # --- Grid detect thresholds ---
         # TUNE BGR to find grid lines.
-        # Used in cv2.inRange.
+        # Used in cv.inRange.
         self.LOWER_THRESHOLD = np.array([200, 200, 200]) # BGR light colors (placeholder)
         self.UPPER_THRESHOLD = np.array([255, 255, 255]) # Max BGR (placeholder)
         
@@ -156,36 +152,36 @@ class TetrisGridDetector(Node):
 
             # 1. Find grid boundary (color/contour)
             # Mask grid lines.
-            mask = cv2.inRange(frame, self.LOWER_THRESHOLD, self.UPPER_THRESHOLD)
+            mask = cv.inRange(frame, self.LOWER_THRESHOLD, self.UPPER_THRESHOLD)
             # Canny edges.
-            edges = cv2.Canny(mask, 50, 150, apertureSize=3)
+            edges = cv.Canny(mask, 50, 150, apertureSize=3)
             # Find shapes.
-            contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours, _ = cv.findContours(edges, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
             if not contours:
                 self.get_logger().warn("No significant grid contours found.")
                 # Show original image even if detection failed
-                cv2.imshow("Original Image - Boundary Not Found", display_frame) 
-                cv2.waitKey(0)
+                cv.imshow("Original Image - Boundary Not Found", display_frame) 
+                cv.waitKey(0)
                 return None
 
             # Largest contour = full grid.
-            largest_contour = max(contours, key=cv2.contourArea)
+            largest_contour = max(contours, key=cv.contourArea)
             # Approx polygon (needs 4 sides).
-            epsilon = 0.04 * cv2.arcLength(largest_contour, True)
-            approx = cv2.approxPolyDP(largest_contour, epsilon, True)
+            epsilon = 0.04 * cv.arcLength(largest_contour, True)
+            approx = cv.approxPolyDP(largest_contour, epsilon, True)
 
             # Check if large 4-sided shape.
-            if len(approx) != 4 or cv2.contourArea(largest_contour) < 1000:
+            if len(approx) != 4 or cv.contourArea(largest_contour) < 1000:
                 self.get_logger().warn("Could not find a clear 4-sided rectangular grid boundary.")
                 # Show original image even if detection failed
-                cv2.imshow("Original Image - Boundary Not Found", display_frame) 
-                cv2.waitKey(0)
+                cv.imshow("Original Image - Boundary Not Found", display_frame) 
+                cv.waitKey(0)
                 return None
             
             # Draw the detected boundary on the original image (Green line, 3px thick)
-            cv2.polylines(display_frame, [approx], True, (0, 255, 0), 3)
-            cv2.imshow("Original Image - Detected Boundary", display_frame)
+            cv.polylines(display_frame, [approx], True, (0, 255, 0), 3)
+            cv.imshow("Original Image - Detected Boundary", display_frame)
             
             # --- Perspective Warp (Deskew) ---
             
@@ -200,9 +196,9 @@ class TetrisGridDetector(Node):
                 [0, WARPED_HEIGHT - 1]], dtype="float32") # Bottom-Left
 
             # 4. Get warp matrix, apply warp.
-            M = cv2.getPerspectiveTransform(rect_points, dst)
+            M = cv.getPerspectiveTransform(rect_points, dst)
             # 'warped_grid' is straight view.
-            warped_grid = cv2.warpPerspective(frame, M, (WARPED_WIDTH, WARPED_HEIGHT))
+            warped_grid = cv.warpPerspective(frame, M, (WARPED_WIDTH, WARPED_HEIGHT))
             self.get_logger().info(f"Perspective corrected grid size: {warped_grid.shape[:2]}")
 
             # 5. Loop cells, read state.
@@ -212,10 +208,10 @@ class TetrisGridDetector(Node):
             # Draw the internal grid lines on the warped image (White lines, 1px thick)
             for i in range(1, GRID_WIDTH):
                 x = i * cell_w
-                cv2.line(warped_grid, (x, 0), (x, WARPED_HEIGHT), (255, 255, 255), 1)
+                cv.line(warped_grid, (x, 0), (x, WARPED_HEIGHT), (255, 255, 255), 1)
             for i in range(1, GRID_HEIGHT):
                 y = i * cell_h
-                cv2.line(warped_grid, (0, y), (WARPED_WIDTH, y), (255, 255, 255), 1)
+                cv.line(warped_grid, (0, y), (WARPED_WIDTH, y), (255, 255, 255), 1)
             
             # Init 20x10 state array.
             game_state: List[List[str]] = [["EMPTY"] * GRID_WIDTH for _ in range(GRID_HEIGHT)]
@@ -235,7 +231,7 @@ class TetrisGridDetector(Node):
                     # (Optional) Draw dots for visual check.
                     if piece_type != "EMPTY":
                         # White dots on pieces.
-                        cv2.circle(warped_grid, (center_x, center_y), 5, (255, 255, 255), -1) 
+                        cv.circle(warped_grid, (center_x, center_y), 5, (255, 255, 255), -1) 
 
             # 6. Log result.
             self.get_logger().info("--- Current Game State Read (20 rows x 10 cols) ---")
@@ -245,18 +241,17 @@ class TetrisGridDetector(Node):
                 self.get_logger().info(f"Row {row_index:02}: {simplified_row}")
 
             # Show the perspective corrected image with the drawn grid.
-            cv2.imshow("Corrected Grid State with Cell Lines", warped_grid)
+            cv.imshow("Corrected Grid State with Cell Lines", warped_grid)
             
             # Wait indefinitely until a key is pressed to keep the windows open.
-            cv2.waitKey(0) 
-            cv2.destroyAllWindows()
+            cv.waitKey(0) 
+            cv.destroyAllWindows()
             
             return game_state
 
         except Exception as e:
             self.get_logger().error(f"An error occurred during game state reading: {e}")
             return None
-
 
 def main(args=None):
     rclpy.init(args=args)
@@ -273,7 +268,7 @@ def main(args=None):
 
     else:
         # Load, run detect once.
-        frame_to_process = cv2.imread(sample_image_path)
+        frame_to_process = cv.imread(sample_image_path)
         if frame_to_process is not None:
             detector_node.get_logger().info(f"Successfully loaded image: {sample_image_path}. Running detection...")
             detector_node.process_image(frame_to_process)
