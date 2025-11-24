@@ -2,7 +2,9 @@
 
 Welcome to the Tetris King-Fish website! Tetris King-Fish consists of Ashley Yang, Bill Le, Oscar Bao, Sam Wisnoski, Satchel Schiavo, and the fish himself, Suketoudara. 
 
-*insert picture* 
+<p align="center">
+  <img src="suk_sr.png" alt="Suketoudara" width="400">
+</p>
 
 Our goal is to build a robot that can autonomously play Puyo Puyo Tetris 2 on the Nintendo Switch 2 by using computer vision to read the game state, 
 a custom algorithm to make decisions, and a robotic arm to control the game. Success will be measured by our robot achieving a score of at least 5,000
@@ -63,6 +65,12 @@ We've created the website to take in a markdown file, although it's still very b
 
 
 ## MVP & Milestone 2
+The current state of our project can best be explained by the image of Suketoudara Jr. below: 
+
+<p align="center">
+  <img src="suk_jr.jpg" alt="Suketoudara junior" width="400">
+</p>
+
 Only a week into the project, our MVP remains *mostly* unchanged from our original goal. With further research into RL, it seems possible, but very challenging, to make a decent algorithm with RL. We still want to continue persuing reinforcement learning for the time being, but we are open to switching to a simpler heuristic model. Besides that, we still believe that the CV and Robotic arm are well within our capabilities.
 
 For milestone 2, we hope to complete our MVP with a basic integrated pipeline. This means that we should be able to read the screen for state data, throw the state data into an algorithm, have the algorithm output an ideal move, and then have our arm input that move into the controller. We recognize that this is an ambitious goal, but we are not reaching for perfection, just a working solution. 
