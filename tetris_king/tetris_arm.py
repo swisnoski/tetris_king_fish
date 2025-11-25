@@ -65,7 +65,8 @@ class TetrisArm(Node):
             if err < 0.01:
                 arm_move_start = time.perf_counter()
                 self.mc.send_angles(soln, 100)
-                self.mc.send_angles([0, 0, 0, 0, 0, 0], 100)
+                soln[3] = soln[3] + 20
+                self.mc.send_angles(soln, 100)
                 arm_move_end = time.perf_counter()
                 self.get_logger().info(
                     f"Move time: {(arm_move_end - arm_move_start):.6f} seconds"
