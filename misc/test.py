@@ -12,27 +12,32 @@ count = 0
 
 total_time = 0
 
-for i in range(2):
+# for i in range(2):
 
-    start_time = time.perf_counter()
+start_time = time.perf_counter()
 
-    desired_ee = [
-        0.24,
-        np.random.uniform(low=-0.1, high=0.1, size=1)[0],
-        np.random.uniform(low=0.05, high=0.1, size=1)[0],
-    ]
-    soln, err = inverse_kinematics([0, 0, 0, 0, 0, 0], desired_ee, tol=0.01)
-    soln = util.rad2deg(soln)
-    soln[5] = 0
+desired_ee = [0.1, 0.0, 0.2]
+print(util.deg2rad([40.78, 0.17, -0.52, -90.17, 0.0, 0.61]))
+soln, err = inverse_kinematics(
+    util.deg2rad([40.78, 0.17, -0.52, -90.17, 0.0, 0.61]), desired_ee, tol=0.01
+)
 
-    end_time = time.perf_counter()
+print(f"Solution (radians): {soln}")
 
-    elapsed_time = end_time - start_time
-    total_time = total_time + elapsed_time
+soln = util.rad2deg(soln)
+soln[5] = 0
 
-    if err < 0.01:
-        success_count = success_count + 1
-    count = count + 1
+end_time = time.perf_counter()
+
+print(f"Solution: {soln}")
+print(f"Error: {err}")
+
+elapsed_time = end_time - start_time
+total_time = total_time + elapsed_time
+
+if err < 0.01:
+    success_count = success_count + 1
+count = count + 1
 
 avg_time = total_time / count
 success_rate = success_count / count

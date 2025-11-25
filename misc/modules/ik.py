@@ -176,6 +176,7 @@ def inverse_kinematics(
         dtheta = np.clip(dtheta, -max_step, max_step)
 
         theta = theta + 1 * dtheta
+        theta = np.clip(theta, lower_bounds, upper_bounds)
 
         # alpha = line_search(theta, dtheta, p_desired)
         # if alpha > 0:
