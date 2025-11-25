@@ -53,19 +53,19 @@ class TetrisArm(Node):
             soln = util.rad2deg(soln)
             soln[5] = 0
 
-            end_time = time.perf_counter()
-
             # log results
             self.get_logger().info(f"Error: {err}")
             self.get_logger().info(f"Soln: {soln}")
-            elapsed_time = end_time - start_time
-            self.get_logger().info(f"Elapsed time: {elapsed_time:.6f} seconds")
 
             # Move arm
             if err < 0.01:
                 self.mc.send_angles(soln, 30)
             else:
                 self.get_logger().info("Error too high!")
+
+            end_time = time.perf_counter()
+            elapsed_time = end_time - start_time
+            self.get_logger().info(f"Elapsed time: {elapsed_time:.6f} seconds")
 
 
 def main(args=None):
