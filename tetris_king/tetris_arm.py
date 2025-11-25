@@ -53,6 +53,12 @@ class TetrisArm(Node):
             soln = util.rad2deg(soln)
             soln[5] = 0
 
+            ik_done_time = time.perf_counter()
+
+            self.get_logger().info(
+                f"IK time: {(ik_done_time - start_time):.6f} seconds"
+            )
+
             # log results
             self.get_logger().info(f"Error: {err}")
             self.get_logger().info(f"Soln: {soln}")
@@ -65,7 +71,7 @@ class TetrisArm(Node):
 
             end_time = time.perf_counter()
             elapsed_time = end_time - start_time
-            self.get_logger().info(f"Elapsed time: {elapsed_time:.6f} seconds")
+            self.get_logger().info(f"Full process time: {elapsed_time:.6f} seconds")
 
 
 def main(args=None):
