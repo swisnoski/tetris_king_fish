@@ -45,6 +45,8 @@ class TetrisArm(Node):
         if not self.mc.is_moving():
             print("Starting IK")
 
+            self.get_logger().info(f"Current angles: {self.mc.get_angles()}")
+
             # track IK time for future optimization
             start_time = time.perf_counter()
 
