@@ -51,7 +51,9 @@ class TetrisArm(Node):
             start_time = time.perf_counter()
 
             # IK
-            soln, err = inverse_kinematics([0, 0, 0, 0, 0, 0], desired_ee, tol=0.01)
+            soln, err = inverse_kinematics(
+                util.deg2rad(self.mc.get_angles()), desired_ee, tol=0.01
+            )
             soln = util.rad2deg(soln)
             soln[5] = 0
 
