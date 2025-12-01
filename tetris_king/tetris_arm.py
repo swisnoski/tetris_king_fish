@@ -43,8 +43,6 @@ class TetrisArm(Node):
         self.get_logger().info(f"Desired pose: {desired_ee}")
 
         if not self.mc.is_moving():
-            print("Starting IK")
-
             # track IK time for future optimization
             start_time = time.perf_counter()
 
@@ -53,19 +51,32 @@ class TetrisArm(Node):
             soln = util.rad2deg(soln)
             soln[5] = 0
 
-            end_time = time.perf_counter()
+            ik_done_time = time.perf_counter()
+
+            self.get_logger().info(
+                f"IK time: {(ik_done_time - start_time):.6f} seconds"
+            )
 
             # log results
             self.get_logger().info(f"Error: {err}")
             self.get_logger().info(f"Soln: {soln}")
-            elapsed_time = end_time - start_time
-            self.get_logger().info(f"Elapsed time: {elapsed_time:.6f} seconds")
 
             # Move arm
             if err < 0.01:
-                self.mc.send_angles(soln, 30)
+                arm_move_start = time.perf_counter()
+                self.mc.send_angles(soln, 100)
+                soln[3] = soln[3] + 20
+                self.mc.send_angles(soln, 100)
+                arm_move_end = time.perf_counter()
+                self.get_logger().info(
+                    f"Move time: {(arm_move_end - arm_move_start):.6f} seconds"
+                )
             else:
                 self.get_logger().info("Error too high!")
+
+            end_time = time.perf_counter()
+            elapsed_time = end_time - start_time
+            self.get_logger().info(f"Full process time: {elapsed_time:.6f} seconds")
 
 
 def main(args=None):
