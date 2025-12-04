@@ -99,8 +99,6 @@ class Tetris:
         self.screen = pygame.display.set_mode((self.WIDTH*self.CELL_SIZE, (self.HEIGHT+2)*self.CELL_SIZE))
         # create board with walls
         self.board = np.zeros((self.HEIGHT+3, self.WIDTH+2))
-        self.board[0, :] = 3
-        self.board[1, :] = 3
         self.board[-1, :] = 2
         self.board[:, 0] = 5
         self.board[:, -1] = 5
@@ -260,7 +258,7 @@ class Tetris:
                 self.key_inputs.add(pygame.key.name(event.key))
                 # print(f"Key pressed: {event.key}")
 
-    def check_win(self):
+    def check_loss(self):
         for cell in self.board[1]:
             if cell == 2:
                 print("Game Over!")
@@ -272,7 +270,7 @@ class Tetris:
             self.key_listener()
             self.update_board()
             self.update_screen()
-            self.check_win()
+            self.check_loss()
 
 
 # my_tetris = Tetris()

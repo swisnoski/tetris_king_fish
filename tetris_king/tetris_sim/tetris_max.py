@@ -1,4 +1,4 @@
-from tetris import Tetris, Piece, PIECE_LIST, LOCATIONS
+from tetris import Tetris, Piece, LOCATIONS
 import numpy as np
 import pygame
 import sys
@@ -19,15 +19,49 @@ class Tetris_MAX(Tetris):
     def __init__(self):
         super().__init__()
         self.last_move_time = 0 
-        self.MOVETIME = 10
+        self.MOVETIME = 50
+        self.iteration = 0
 
 
     def auto_loop(self):
         while True:
             self.spawn_piece()
-            r, t = find_best_move(self.board, self.current_piece.type)            
-            print(t, r)
+
+            r, t = find_best_move(self.board, self.current_piece.type)
+
+            # print(t, r)
             self.execute_moves(r, t) # display_board is called within this function 
+
+    def auto_step(self):
+        while True:
+            self.step()
+
+
+    def step(self, action=None):
+
+        current_score = score_board(self.board)
+
+        self.spawn_piece()
+
+        # r, t = action
+        r, t = find_best_move(self.board, self.current_piece.type)
+
+        self.execute_moves(r, t)
+
+        next_state = np.copy(self.board)
+
+        new_score = score_board(self.board)
+        reward = new_score - current_score
+
+        done = self.check_loss()
+        self.iteration += 1  # Placeholder for iteration count if needed
+
+        print("-----------------------------------")
+        print(f"Next State:\n{self.board}")
+        print(f"Step: {self.iteration}, Reward: {reward}, Done: {done}")
+
+
+        return next_state, reward, done, self.iteration
 
 
     def execute_moves(self, r, t):
@@ -76,10 +110,6 @@ class Tetris_MAX(Tetris):
             self.clock.tick(self.FPS)
 
     
-
-    
-
-
             
 
 def detect_collision_normal(board, piece, x, y):
@@ -132,6 +162,10 @@ def score_board(board, HEIGHT=20, WIDTH=10):
         # print(f"Total Height: {total_height}, Lines_Cleared: {lines_cleared}, Holes: {holes}, Bumps: {bumpiness}")
         score = (total_height * -0.510066) + (lines_cleared * 0.760666) + (holes * -0.35663) + (bumpiness * -0.184483)
         return score
+
+
+# def score_board_normal(board, HEIGHT=20, WIDTH=10):
+
     
 
 def find_best_move(board, piece_type):
@@ -186,8 +220,39 @@ def find_best_move(board, piece_type):
     
     return top_position
 
+def find_best_move_MAX(board, piece_list):
+    best_move = None
+    best_score = -float("inf")
+
+    for piece_type in piece_list:
+        r, t = find_best_move(board, piece_type)
+        # simulate the move
+        testing_piece = Piece(piece_type)
+        testing_piece.rotate(n_rotations=r)
+        testing_piece_x, testing_piece_y = LOCATIONS[piece_type]
+        testing_piece_x += t
+
+        testing_board = np.copy(board)
+
+        drop_value = 0
+        while not detect_collision_normal(testing_board, testing_piece, testing_piece_x, testing_piece_y+drop_value): 
+            drop_value += 1
+        drop_value -= 1
+
+        for i in range(testing_piece.height):
+            for j in range(testing_piece.width):
+                if testing_piece.blocks[i][j] == 1:
+                    testing_board[testing_piece_y + drop_value + i][testing_piece_x + j] = 2
+
+        run_score = score_board(testing_board)
+        if run_score > best_score:
+            best_score = run_score
+            best_move = (piece_type, r, t)
+
+    return best_move
+
 
 
 
 my_tetris_rl = Tetris_MAX()
-my_tetris_rl.auto_loop()
+my_tetris_rl.auto_step()
