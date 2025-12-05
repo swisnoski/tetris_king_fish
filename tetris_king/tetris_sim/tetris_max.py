@@ -60,8 +60,11 @@ class Tetris_MAX(Tetris):
         print(f"Next State:\n{self.board}")
         print(f"Step: {self.iteration}, Reward: {reward}, Done: {done}")
 
+        valid_moves = find_legal_moves(self.board, self.next_pieces[0])
 
-        return next_state, reward, done, self.iteration
+
+
+        return next_state, reward, done, self.iteration, valid_moves
 
 
     def execute_moves(self, r, t):
@@ -219,6 +222,43 @@ def find_best_move(board, piece_type):
                     top_score = run_score
     
     return top_position
+
+
+
+
+def find_legal_moves(board, piece_type):
+    # should need board, piece, possibilities
+
+    pos_rotations, _ = (POSSIBILITIES[piece_type])
+    pos_translations = range(-5,6)
+
+    legal_moves = []
+
+    for r in pos_rotations:
+        testing_piece = Piece(piece_type)
+        testing_piece.rotate(n_rotations=r)
+
+        for t in pos_translations:
+            testing_piece_x, testing_piece_y = LOCATIONS[piece_type]
+            testing_board = np.copy(board)
+            testing_piece_x += t
+
+            if not detect_collision_normal(testing_board, testing_piece, testing_piece_x, testing_piece_y):
+                legal_moves.append(1)
+            else:
+                legal_moves.append(0)
+
+
+    num_rot = len(pos_rotations)
+    extra_zeros = 11 * (4 - num_rot)
+
+    for _ in range(extra_zeros):
+        legal_moves.append(0)
+
+    return legal_moves
+
+
+
 
 def find_best_move_MAX(board, piece_list):
     best_move = None
