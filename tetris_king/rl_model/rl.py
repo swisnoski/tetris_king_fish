@@ -5,7 +5,7 @@ from collections import deque
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from tetris_king.tetris_sim.tetris_max import Tetris_MAX
+from tetris_king.tetris_sim.tetris_rl import Tetris_RL
 
 
 # Defining the model
@@ -23,7 +23,7 @@ class DQN(nn.Module):
 
 
 # env = gym.make("CartPole-v1")
-env = Tetris_MAX()
+env = Tetris_RL()
 state_size = 14
 action_size = 44
 
@@ -105,7 +105,7 @@ def main():
     for episode in range(episodes):
         # reset_result = env.reset()
         # state = reset_result[0] if isinstance(reset_result, tuple) else reset_result
-        state, valid_mask = env.reset()
+        state, valid_mask = env.initialize()
         total_reward = 0
 
         for _ in range(500):

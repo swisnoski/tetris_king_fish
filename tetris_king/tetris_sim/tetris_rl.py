@@ -1,4 +1,4 @@
-from tetris import Tetris, Piece, LOCATIONS
+from .tetris import Tetris, Piece, LOCATIONS
 import numpy as np
 import pygame
 import sys
@@ -22,9 +22,11 @@ class Tetris_RL(Tetris):
         self.iteration = 0
         self.last_score = 0
 
-    def start(self):
+    def initialize(self):
         self.spawn_piece()
-        return self.board
+        valid_moves = find_legal_moves(self.board, self.current_piece)
+        state = self.state_returner()
+        return state, valid_moves
 
     def step(self, action):
 
@@ -37,7 +39,7 @@ class Tetris_RL(Tetris):
 
         self.spawn_piece()
 
-        next_state = np.copy(self.board)
+        next_state = self.state_returner()
 
         new_score = score_board(self.board)
 
@@ -50,7 +52,7 @@ class Tetris_RL(Tetris):
         print(f"Next State:\n{self.board}")
         print(f"Step: {self.iteration}, Reward: {reward}, Done: {done}")
 
-        valid_moves = find_legal_moves(self.board, self.next_pieces[0])
+        valid_moves = find_legal_moves(self.board, self.current_piece)
 
         return next_state, reward, done, self.iteration, valid_moves
 
@@ -98,6 +100,15 @@ class Tetris_RL(Tetris):
                     pygame.quit()
                     sys.exit()
             self.clock.tick(self.FPS)
+
+    def state_returner(self):
+        column_counts = []
+        for col in range(1, 11):
+            count = np.sum(self.board[:, col] == 2) - 1
+            column_counts.append(count)
+        column_counts.append(self.current_piece)
+        column_counts.extend(self.next_pieces)
+        return column_counts
 
 
 def detect_collision_normal(board, piece, x, y):
