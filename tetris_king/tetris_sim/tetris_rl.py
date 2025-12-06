@@ -3,7 +3,6 @@ import numpy as np
 import pygame
 import sys
 
-
 POSSIBILITIES = {
     "I": (range(2), range(-4, 6, 1)),
     "T": (range(4), range(-4, 5, 1)),
@@ -15,7 +14,7 @@ POSSIBILITIES = {
 }
 
 
-class Tetris_MAX(Tetris):
+class Tetris_RL(Tetris):
     def __init__(self):
         super().__init__()
         self.last_move_time = 0
@@ -27,28 +26,12 @@ class Tetris_MAX(Tetris):
         self.spawn_piece()
         return self.board
 
-    def auto_loop(self):
-        while True:
-            self.spawn_piece()
-
-            r, t = find_best_move(self.board, self.current_piece.type)
-
-            # print(t, r)
-            self.execute_moves(r, t)  # display_board is called within this function
-
-    def auto_step(self):
-        while True:
-            self.step()
-
-    def step(self, action=None):
+    def step(self, action):
 
         current_score = score_board(self.board)
 
-        if action is not None:
-            r = (action - 1) // 11
-            t = (action - 1) % 11 - 5
-        else:
-            r, t = find_best_move(self.board, self.current_piece.type)
+        r = (action - 1) // 11
+        t = (action - 1) % 11 - 5
 
         self.execute_moves(r, t)
 
@@ -173,71 +156,6 @@ def score_board(board, HEIGHT=20, WIDTH=10):
     return score
 
 
-# def score_board_normal(board, HEIGHT=20, WIDTH=10):
-
-
-def find_best_move(board, piece_type):
-    # should need board, piece, possibilities
-    top_score = -float("inf")
-    run_score = 0
-    top_position = (0, 0)
-
-    pos_rotations, pos_translations = POSSIBILITIES[piece_type]
-
-    for r in pos_rotations:
-        # initialize the piece
-        testing_piece = Piece(piece_type)
-        # give it a spin
-        testing_piece.rotate(n_rotations=r)
-
-        # give it a move
-        for t in pos_translations:
-
-            # reset the locations
-            testing_piece_x, testing_piece_y = LOCATIONS[piece_type]
-
-            # reset the board
-            testing_board = np.copy(board)
-
-            # move the piece over
-            testing_piece_x += t
-
-            # for now, if it doesn't collide ABOVE the space, we are just going to assume that it can make it
-            # to the location safely
-
-            if not detect_collision_normal(
-                testing_board, testing_piece, testing_piece_x, testing_piece_y
-            ):
-                # so if we've made it this far, we can drop the piece. notably, we don't actually want to
-                # visualize this at all, we just are doing calculations here for now
-
-                drop_value = 0
-                while not detect_collision_normal(
-                    testing_board,
-                    testing_piece,
-                    testing_piece_x,
-                    testing_piece_y + drop_value,
-                ):
-                    drop_value += 1
-                drop_value -= 1
-
-                # place piece on board
-                for i in range(testing_piece.height):
-                    for j in range(testing_piece.width):
-                        if testing_piece.blocks[i][j] == 1:
-                            testing_board[testing_piece_y + drop_value + i][
-                                testing_piece_x + j
-                            ] = 2
-
-                # lastly, calculate the score
-                run_score = score_board(testing_board)
-                if run_score > top_score:
-                    top_position = (r, t)
-                    top_score = run_score
-
-    return top_position
-
-
 def find_legal_moves(board, piece_type):
     # should need board, piece, possibilities
 
@@ -269,48 +187,3 @@ def find_legal_moves(board, piece_type):
         legal_moves.append(0)
 
     return legal_moves
-
-
-def find_best_move_MAX(board, piece_list):
-    best_move = None
-    best_score = -float("inf")
-
-    for piece_type in piece_list:
-        r, t = find_best_move(board, piece_type)
-        # simulate the move
-        testing_piece = Piece(piece_type)
-        testing_piece.rotate(n_rotations=r)
-        testing_piece_x, testing_piece_y = LOCATIONS[piece_type]
-        testing_piece_x += t
-
-        testing_board = np.copy(board)
-
-        drop_value = 0
-        while not detect_collision_normal(
-            testing_board, testing_piece, testing_piece_x, testing_piece_y + drop_value
-        ):
-            drop_value += 1
-        drop_value -= 1
-
-        for i in range(testing_piece.height):
-            for j in range(testing_piece.width):
-                if testing_piece.blocks[i][j] == 1:
-                    testing_board[testing_piece_y + drop_value + i][
-                        testing_piece_x + j
-                    ] = 2
-
-        run_score = score_board(testing_board)
-        if run_score > best_score:
-            best_score = run_score
-            best_move = (piece_type, r, t)
-
-    return best_move
-
-
-def main():
-    my_tetris_rl = Tetris_MAX()
-    my_tetris_rl.auto_step()
-
-
-if __name__ == "__main__":
-    main()
