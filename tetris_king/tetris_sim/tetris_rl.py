@@ -24,6 +24,7 @@ class Tetris_RL(Tetris):
 
     def initialize(self):
         self.spawn_piece()
+        print(self.current_piece)
         valid_moves = find_legal_moves(self.board, self.current_piece)
         state = self.state_returner()
         return state, valid_moves

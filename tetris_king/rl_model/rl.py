@@ -1,3 +1,5 @@
+import sys
+from pathlib import Path
 import gymnasium as gym
 import random
 import numpy as np
@@ -6,6 +8,10 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from tetris_king.tetris_sim.tetris_rl import Tetris_RL
+
+
+# Add the tetris_king_fish directory to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 
 # Defining the model
