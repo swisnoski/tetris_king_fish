@@ -30,7 +30,7 @@ class DQN(nn.Module):
 
 # env = gym.make("CartPole-v1")
 env = Tetris_RL()
-state_size = 14
+state_size = 38
 action_size = 44
 
 # Hyperparameters
@@ -64,11 +64,15 @@ def get_action(state, epsilon, valid_moves):
         state = torch.FloatTensor(state).unsqueeze(0).to(device)
         with torch.no_grad():
             q_values = policy_net(state)
+
+        # Convert valid_moves list to boolean tensor (True where move is invalid)
+        valid_mask = torch.BoolTensor(valid_moves).to(device)
+        invalid_mask = ~valid_mask  # Invert: True where move is INvalid (0 in list)
+
         # Set Q-values of illegal moves to Negative Infinity
-        q_values[~valid_moves] = -float("inf")
+        q_values[0, invalid_mask] = -float("inf")
 
         # Now select the action
-        # action = torch.argmax(q_values)
         return q_values.argmax().item()
 
 
@@ -116,7 +120,7 @@ def main():
 
         for _ in range(500):
             action = get_action(state, epsilon, valid_mask)
-            step_result = env.step(action)
+            step_result = env.step(action + 1)
 
             # if len(step_result) == 5:
             #     next_state, reward, terminated, truncated, _ = step_result
@@ -139,7 +143,7 @@ def main():
         if episode % target_update_freq == 0:
             target_net.load_state_dict(policy_net.state_dict())
 
-        env.close()
+        env.reset()
 
         print(
             f"Episode {episode}, Total Reward: {total_reward}, Epsilon: {epsilon:.3f}"

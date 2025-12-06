@@ -1,7 +1,6 @@
 from .tetris import Tetris, Piece, LOCATIONS
 import numpy as np
-import pygame
-import sys
+import random
 
 POSSIBILITIES = {
     "I": (range(2), range(-4, 6, 1)),
@@ -13,19 +12,67 @@ POSSIBILITIES = {
     "J": (range(4), range(-4, 5, 1)),
 }
 
+PIECE_LIST = ["I", "T", "O", "S", "Z", "L", "J"]
+
+PIECE_ENCODING = {
+    "I": [1, 0, 0, 0, 0, 0, 0],
+    "T": [0, 1, 0, 0, 0, 0, 0],
+    "O": [0, 0, 1, 0, 0, 0, 0],
+    "S": [0, 0, 0, 1, 0, 0, 0],
+    "Z": [0, 0, 0, 0, 1, 0, 0],
+    "L": [0, 0, 0, 0, 0, 1, 0],
+    "J": [0, 0, 0, 0, 0, 0, 1],
+}
+
 
 class Tetris_RL(Tetris):
     def __init__(self):
-        super().__init__()
+        # super().__init__()
         self.iteration = 0
         self.last_score = 0
 
+        self.WIDTH = 10
+        self.HEIGHT = 20
+        self.CELL_SIZE = 30
+        self.FPS = 20
+        self.DROPTIME = 500  # milliseconds
+
+        self.RED = (255, 0, 0)
+        self.BLUE = (0, 0, 255)
+        self.BLACK = (0, 0, 0)
+        self.WHITE = (255, 255, 255)
+
+        # create board with walls
+        self.board = np.zeros((self.HEIGHT + 3, self.WIDTH + 2))
+        self.board[-1, :] = 2
+        self.board[:, 0] = 5
+        self.board[:, -1] = 5
+
+        # generate current piece
+        self.current_piece = None
+        self.piece_x = 0
+        self.piece_y = 0
+
+        self.next_pieces = [
+            random.choice(PIECE_LIST),
+            random.choice(PIECE_LIST),
+            random.choice(PIECE_LIST),
+        ]
+
     def initialize(self):
         self.spawn_piece()
-        print(self.current_piece)
-        valid_moves = find_legal_moves(self.board, self.current_piece)
+        print(self.current_piece.type)
+        valid_moves = find_legal_moves(self.board, self.current_piece.type)
         state = self.state_returner()
         return state, valid_moves
+
+    def reset(self):
+        self.board = np.zeros((self.HEIGHT + 3, self.WIDTH + 2))
+        self.board[-1, :] = 2
+        self.board[:, 0] = 5
+        self.board[:, -1] = 5
+
+        self.current_piece = None
 
     def step(self, action):
 
@@ -51,15 +98,14 @@ class Tetris_RL(Tetris):
         print(f"Next State:\n{self.board}")
         print(f"Step: {self.iteration}, Reward: {reward}, Done: {done}")
 
-        valid_moves = find_legal_moves(self.board, self.current_piece)
+        valid_moves = find_legal_moves(self.board, self.current_piece.type)
 
         return next_state, reward, done, self.iteration, valid_moves
-
 
     def execute_moves(self, r, t):
 
         # rotate and move the piece
-        self.current_piece.rotate(num_rotations=r)
+        self.current_piece.rotate(n_rotations=r)
         self.piece_x += t
 
         piece_in_place = False
@@ -68,21 +114,26 @@ class Tetris_RL(Tetris):
                 for i in range(self.current_piece.height):
                     for j in range(self.current_piece.width):
                         if self.current_piece.blocks[i][j] == 1:
-                            self.board[self.piece_y + i][self.piece_x + j] = 2
+                            try:
+                                self.board[self.piece_y + i][self.piece_x + j] = 2
+                            except IndexError:
+                                print(
+                                    f"ERROR. r: {r}, t: {t}, piece: {self.current_piece.type}"
+                                )
+                                exit(0)
                 piece_in_place = True
                 self.check_and_clear_tetris()
             else:
                 self.piece_y += 1
-
-     
 
     def state_returner(self):
         column_counts = []
         for col in range(1, 11):
             count = np.sum(self.board[:, col] == 2) - 1
             column_counts.append(count)
-        column_counts.append(self.current_piece)
-        column_counts.extend(self.next_pieces)
+        column_counts.extend(PIECE_ENCODING[self.current_piece.type])
+        for next_piece in self.next_pieces:
+            column_counts.extend(PIECE_ENCODING[next_piece])
         return column_counts
 
 
@@ -159,17 +210,21 @@ def find_legal_moves(board, piece_type):
             testing_board = np.copy(board)
             testing_piece_x += t
 
-            if not detect_collision_normal(
+            if detect_collision_normal(
                 testing_board, testing_piece, testing_piece_x, testing_piece_y
             ):
-                legal_moves.append(1)
-            else:
                 legal_moves.append(0)
+            else:
+                legal_moves.append(1)
 
     num_rot = len(pos_rotations)
     extra_zeros = 11 * (4 - num_rot)
 
     for _ in range(extra_zeros):
         legal_moves.append(0)
+
+    if len(legal_moves) != 44:
+        print("WHAT THE FUCK")
+        raise InterruptedError
 
     return legal_moves
