@@ -18,14 +18,10 @@ POSSIBILITIES = {
 class Tetris_MAX(Tetris):
     def __init__(self):
         super().__init__()
-        self.last_move_time = 0
-        self.MOVETIME = 50
+        self.last_move_time = 0 
+        self.MOVETIME = 1 
         self.iteration = 0
-        self.last_score = 0
 
-    def start(self):
-        self.spawn_piece()
-        return self.board
 
     def auto_loop(self):
         while True:
@@ -34,68 +30,33 @@ class Tetris_MAX(Tetris):
             r, t = find_best_move(self.board, self.current_piece.type)
 
             # print(t, r)
-            self.execute_moves(r, t)  # display_board is called within this function
-
-    def auto_step(self):
-        while True:
-            self.step()
-
-    def step(self, action=None):
-
-        current_score = score_board(self.board)
-
-        if action is not None:
-            r = (action - 1) // 11
-            t = (action - 1) % 11 - 5
-        else:
-            r, t = find_best_move(self.board, self.current_piece.type)
-
-        self.execute_moves(r, t)
-
-        self.spawn_piece()
-
-        next_state = np.copy(self.board)
-
-        new_score = score_board(self.board)
-
-        reward = new_score - current_score
-
-        done = self.check_loss()
-        self.iteration += 1  # Placeholder for iteration count if needed
-
-        print("-----------------------------------")
-        print(f"Next State:\n{self.board}")
-        print(f"Step: {self.iteration}, Reward: {reward}, Done: {done}")
-
-        valid_moves = find_legal_moves(self.board, self.next_pieces[0])
-
-        return next_state, reward, done, self.iteration, valid_moves
+            self.execute_moves(r, t) # display_board is called within this function 
 
     def execute_moves(self, r, t):
         # loop until
         piece_in_place = False
-        while piece_in_place is False:
+        while piece_in_place is False: 
             self.time += self.clock.get_time()
             self.clear_piece()
 
-            # check if move
+            # check if move 
             if self.time - self.last_move_time > self.MOVETIME:
                 if r > 0:
                     self.current_piece.rotate()
-                    r -= 1
+                    r-=1
                     self.place_piece()
 
-                elif t > 0:
+                elif t > 0: 
                     self.piece_x += 1
-                    t -= 1
+                    t-=1
                     self.place_piece()
 
                 elif t < 0:
                     self.piece_x -= 1
-                    t += 1
+                    t+=1
                     self.place_piece()
 
-                else:
+                else: 
                     if self.detect_collision(offset_y=1):
                         for i in range(self.current_piece.height):
                             for j in range(self.current_piece.width):
@@ -114,7 +75,7 @@ class Tetris_MAX(Tetris):
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-            self.clock.tick(self.FPS)
+            self.clock.tick(500)
 
 
 def detect_collision_normal(board, piece, x, y):
@@ -238,78 +199,11 @@ def find_best_move(board, piece_type):
     return top_position
 
 
-def find_legal_moves(board, piece_type):
-    # should need board, piece, possibilities
-
-    pos_rotations, _ = POSSIBILITIES[piece_type]
-    pos_translations = range(-5, 6)
-
-    legal_moves = []
-
-    for r in pos_rotations:
-        testing_piece = Piece(piece_type)
-        testing_piece.rotate(n_rotations=r)
-
-        for t in pos_translations:
-            testing_piece_x, testing_piece_y = LOCATIONS[piece_type]
-            testing_board = np.copy(board)
-            testing_piece_x += t
-
-            if not detect_collision_normal(
-                testing_board, testing_piece, testing_piece_x, testing_piece_y
-            ):
-                legal_moves.append(1)
-            else:
-                legal_moves.append(0)
-
-    num_rot = len(pos_rotations)
-    extra_zeros = 11 * (4 - num_rot)
-
-    for _ in range(extra_zeros):
-        legal_moves.append(0)
-
-    return legal_moves
-
-
-def find_best_move_MAX(board, piece_list):
-    best_move = None
-    best_score = -float("inf")
-
-    for piece_type in piece_list:
-        r, t = find_best_move(board, piece_type)
-        # simulate the move
-        testing_piece = Piece(piece_type)
-        testing_piece.rotate(n_rotations=r)
-        testing_piece_x, testing_piece_y = LOCATIONS[piece_type]
-        testing_piece_x += t
-
-        testing_board = np.copy(board)
-
-        drop_value = 0
-        while not detect_collision_normal(
-            testing_board, testing_piece, testing_piece_x, testing_piece_y + drop_value
-        ):
-            drop_value += 1
-        drop_value -= 1
-
-        for i in range(testing_piece.height):
-            for j in range(testing_piece.width):
-                if testing_piece.blocks[i][j] == 1:
-                    testing_board[testing_piece_y + drop_value + i][
-                        testing_piece_x + j
-                    ] = 2
-
-        run_score = score_board(testing_board)
-        if run_score > best_score:
-            best_score = run_score
-            best_move = (piece_type, r, t)
-
-    return best_move
 
 
 def main():
-    my_tetris_rl = Tetris_MAX()
-    my_tetris_rl.auto_step()
+    my_tetris_max = Tetris_MAX()
+    my_tetris_max.auto_loop()
 
 
 if __name__ == "__main__":
