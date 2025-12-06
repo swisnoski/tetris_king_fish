@@ -17,8 +17,6 @@ POSSIBILITIES = {
 class Tetris_RL(Tetris):
     def __init__(self):
         super().__init__()
-        self.last_move_time = 0
-        self.MOVETIME = 50
         self.iteration = 0
         self.last_score = 0
 
@@ -57,50 +55,26 @@ class Tetris_RL(Tetris):
 
         return next_state, reward, done, self.iteration, valid_moves
 
+
     def execute_moves(self, r, t):
-        # loop until
+
+        # rotate and move the piece
+        self.current_piece.rotate(num_rotations=r)
+        self.piece_x += t
+
         piece_in_place = False
         while piece_in_place is False:
-            self.time += self.clock.get_time()
-            self.clear_piece()
+            if self.detect_collision(offset_y=1):
+                for i in range(self.current_piece.height):
+                    for j in range(self.current_piece.width):
+                        if self.current_piece.blocks[i][j] == 1:
+                            self.board[self.piece_y + i][self.piece_x + j] = 2
+                piece_in_place = True
+                self.check_and_clear_tetris()
+            else:
+                self.piece_y += 1
 
-            # check if move
-            if self.time - self.last_move_time > self.MOVETIME:
-                if r > 0:
-                    self.current_piece.rotate()
-                    r -= 1
-                    self.place_piece()
-
-                elif t > 0:
-                    self.piece_x += 1
-                    t -= 1
-                    self.place_piece()
-
-                elif t < 0:
-                    self.piece_x -= 1
-                    t += 1
-                    self.place_piece()
-
-                else:
-                    if self.detect_collision(offset_y=1):
-                        for i in range(self.current_piece.height):
-                            for j in range(self.current_piece.width):
-                                if self.current_piece.blocks[i][j] == 1:
-                                    self.board[self.piece_y + i][self.piece_x + j] = 2
-                        piece_in_place = True
-                        self.check_and_clear_tetris()
-                    else:
-                        self.piece_y += 1
-                        self.place_piece()
-
-                self.last_move_time = self.time
-                self.update_screen()
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-            self.clock.tick(self.FPS)
+     
 
     def state_returner(self):
         column_counts = []
