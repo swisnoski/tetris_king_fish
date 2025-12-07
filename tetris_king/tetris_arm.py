@@ -50,7 +50,7 @@ class TetrisArm(Node):
         self.get_logger().info("Connected to arm")
 
         # Reset arm to location [0, 0, 0, 0, 0, 0]
-        self.mc.send_angles([0, 0, 0, 0, 0, 0], 30)
+        self.mc.send_angles(self.action["home"], 30)
         self.mc.set_fresh_mode(1)
         self.get_logger().info("Reset arm")
 
@@ -71,10 +71,18 @@ class TetrisArm(Node):
 
         # Move arm down and up
         if not self.mc.is_moving():
-            self.mc.sync_send_angles(desired_ee, 100, timeout=0.5)
-            self.mc.sync_send_angles(self.action["home"], 100, timeout=0.5)
-            self.mc.sync_send_angles(desired_ee, 100, timeout=0.5)
-            self.mc.sync_send_angles(self.action["home"], 100, timeout=0.5)
+            self.mc.send_angles(desired_ee, 100)
+            time.sleep(0.5)
+            self.mc.clear_queue()
+            self.mc.send_angles(self.action["home"], 100)
+            time.sleep(0.5)
+            self.mc.clear_queue()
+            self.mc.send_angles(desired_ee, 100)
+            time.sleep(0.5)
+            self.mc.clear_queue()
+            self.mc.send_angles(self.action["home"], 100)
+            time.sleep(0.5)
+            self.mc.clear_queue()
 
         end_time = time.perf_counter()
         self.get_logger().info(f"Elapsed Time: {end_time - start_time}")
