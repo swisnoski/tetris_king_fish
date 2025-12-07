@@ -5,7 +5,7 @@ ROS node to move myCobot 280 arm
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import String
+from std_msgs.msg import String, Float32MultiArray
 
 from pymycobot import MyCobot280
 import numpy as np
@@ -21,11 +21,11 @@ class TetrisArm(Node):
 
     action = {
         "rotate": [
-            19.390781149202574,
-            -65.71144706580844,
-            -106.36085117234512,
-            82.07242236680308,
-            0.0005176930105520582,
+            18.42945704984153,
+            -64.09078549771468,
+            -99.60140781108544,
+            73.69215836314227,
+            3.0031403880330304e-05,
             0,
         ],
         "hold": [],
@@ -70,32 +70,43 @@ class TetrisArm(Node):
 
         # Subscribe to action
         self.subscription = self.create_subscription(
-            String, "/action", self.listener_callback, 10
+            Float32MultiArray, "/action", self.listener_callback, 10
         )
 
     def listener_callback(self, msg):
         """
         Get desired pose from topic, perform IK, then move arm
         """
-        start_time = time.perf_counter()
+        # Extract information from topic into rotations and movement
+        data = msg.data
 
-        # Get desired end-effector based on action
-        desired_action = msg.data
-        desired_ee = self.action[desired_action].copy()
+        rotations = data[0]
+        movement = data[1]
 
-        # Move arm down and up
+        # Decide whether movement is left or right
+        direction = None
+        if movement < 0:
+            direction = "left"
+        elif movement > 0:
+            direction = "right"
+
+        # Move arm based on instructions
         if not self.mc.is_moving():
-            self.mc.sync_send_angles(self.action["left"], 100, timeout=0.3)
-            self.mc.sync_send_angles(self.action["home"], 100, timeout=0.3)
-            self.mc.sync_send_angles(self.action["right"], 100, timeout=0.3)
-            self.mc.sync_send_angles(self.action["home"], 100, timeout=0.3)
-            self.mc.sync_send_angles(self.action["left"], 100, timeout=0.3)
-            self.mc.sync_send_angles(self.action["home"], 100, timeout=0.3)
-            self.mc.sync_send_angles(self.action["right"], 100, timeout=0.3)
-            self.mc.sync_send_angles(self.action["home"], 100, timeout=0.3)
+            # Rotate
+            if rotations != 0:
+                for _ in range(rotations):
+                    self.move("rotate")
+            # Move
+            if direction is not None:
+                for _ in range(abs(movement)):
+                    self.move(direction)
 
-        end_time = time.perf_counter()
-        self.get_logger().info(f"Elapsed Time: {end_time - start_time}")
+    def move(self, instr):
+        """
+        Move arm based on instruction
+        """
+        self.mc.sync_send_angles(self.action[instr], 100, timeout=0.3)
+        self.mc.sync_send_angles(self.action["home"], 100, timeout=0.3)
 
 
 def main(args=None):
