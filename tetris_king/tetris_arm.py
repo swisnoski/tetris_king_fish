@@ -28,7 +28,14 @@ class TetrisArm(Node):
             3.0031403880330304e-05,
             0,
         ],
-        "hold": [],
+        "drop": [
+            20.452218522213286,
+            -60.99628252971821,
+            -114.17945283171098,
+            85.17575425584124,
+            -6.356826471584472e-06,
+            0,
+        ],
         "left": [
             22.224149230856394,
             -62.683497431891574,
@@ -45,7 +52,6 @@ class TetrisArm(Node):
             -8.59293671689396e-06,
             0,
         ],
-        "down": [],
         "home": [
             19.38432522180462,
             -48.91106561440083,
@@ -100,6 +106,8 @@ class TetrisArm(Node):
             if direction is not None:
                 for _ in range(abs(movement)):
                     self.move(direction)
+
+        self.move("drop")
 
     def move(self, instr):
         """
