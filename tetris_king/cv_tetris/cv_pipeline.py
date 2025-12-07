@@ -118,5 +118,5 @@ def main():
     
 if __name__ == "__main__":
     cap = initialize_video_capture()
-    last_piece = "I_PIECE"
+    last_piece = "I"
     game_state, current_piece = get_cv_info(cap, last_piece)
