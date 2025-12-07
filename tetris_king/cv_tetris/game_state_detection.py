@@ -29,15 +29,12 @@ COLOR_MAP = {
     "Z_PIECE": [0, 0, 255],     # Red
 }
 
-IMG = "./assets/start_tetris_cleaned.jpg" # dummy image path for now
-
-def get_matrix_fill(grid_pts):
+def get_matrix_fill(img, grid_pts):
     """
     Returns a matrix (2D array) of 0 and 1s for filled game spaces.
 
     Args: 
-        - a list of four coordinates points ex. [(y1, x1), (y2, x2), ...],
-        in (y,x) coordinates to reflect opencv
+        - a list of four coordinates points ex. [(x1, y1), (x2, y2), ...],
 
     Returns:
         - a 2D array of 0s and 1s (0 empty, 1 filled) ex. [[0, 1,]]
@@ -45,56 +42,71 @@ def get_matrix_fill(grid_pts):
     # ----------
      # TO CONSIDER --> THIS LOWK JUST NEEDS TO RUN ONCE (JUST GRID?)
     # make grid of pixel coord pts to check screen image [[(x, y)]]
-    check_grid = None
-    # check_grid = [[0 for _ in GRID_WIDTH] for _ in GRID_HEIGHT]
+    # check_grid = None
+    check_grid = [[0 for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
+    # print(check_grid)
 
     # use dummy data first -- assume start left pt, clockwise order
+    # test draw circles of points
+    for pt in grid_pts:
+        cv.circle(img, pt, 5, (255, 255, 255), -1) 
     left_x = grid_pts[0][0]
     right_x = grid_pts[1][0] 
     up_y = grid_pts[0][1]
     bottom_y = grid_pts[2][1]
     # calculate the pixel center points to fill grid 
     width = right_x - left_x # upper right x - upper left x
-    height = up_y - bottom_y  # upper left y - bottom left y 
-    cell_length = width / GRID_WIDTH # width / grid_num (10)
-    offset_cell = cell_length / 2 # half of cell to offset to center
+    height = bottom_y - up_y   # bottom left y - upper left y 
+
+    cell_len_x = width / GRID_WIDTH # width / grid_num (10)
+    cell_len_y = height / GRID_HEIGHT # height / grid_num (20)
+    offset_cell_x = cell_len_x / 2 # half of cell to offset to center
+    offset_cell_y = cell_len_y / 2 # half of cell to offset to center
 
     # fill matrix with coords of each cell's center point 
-    img = cv.imread(IMG)
-    for i in range(GRID_WIDTH):
-        for j in range(GRID_HEIGHT):
+    for i in range(GRID_HEIGHT): # go through 20 
+        for j in range(GRID_WIDTH): # go through row
+            # print(f'i: {i}, j: {j}')
             # set coordinate point
-            y, x = up_y - (j * cell_length + offset_cell), left_x + (i * cell_length - offset_cell) 
+            y, x = up_y + (i * cell_len_y + offset_cell_y), left_x + (j * cell_len_x + offset_cell_x) 
+            y, x = int(y), int(x)
             check_grid[i][j] = y, x
+            # print((x, y))
             # verify for now with drawing point on image
             cv.circle(img, (x, y), 5, (255, 255, 255), -1) 
-    show_close()
-
+    show_close("Detected grid cells points", img)
+    return check_grid
     # ----------
     # output_grid = check_fill(check_grid)
 
     # return output_grid
 
-def check_fill(check_grid):
+def check_fill(img, check_grid):
     """
     Checks the color of each grid cell by pixel coordinate to see if filled
 
     Returns output_grid of 0's and 1's
     """
     # populate this grid to hold 0 and 1's, should have 200 (grid cell count)
-    output_grid = [[0 for _ in GRID_WIDTH] for _ in GRID_HEIGHT]
+    output_grid = [[0 for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
 
     # iterate through the cetto check the game piece
-    for i, row in enumerate(check_grid):
-        for i, col in enumerate(row):
+    for i, row in enumerate(check_grid): # same size
+        for j, cell in enumerate(row):
             # check color 
             # pixel = img[row, col]
-            y, x = col
+            y, x = cell
             pixel = img[y, x]
+            if i > 17:
+                print(f'pixel: {pixel}')
             # check that any BGR over threhold --> colored
-            if any(channel > 50 for channel in pixel):
+            if any(channel > 100 for channel in pixel): # RN: somewhat abritrary threshold
              # access image at row pixel, col pixel
-                output_grid[i][i] = 1
+                output_grid[i][j] = 1
+                # verify visually with a green dot
+                cv.circle(img, (x, y), 5, (0, 255, 0), -1) 
+    
+    show_close("Check Fill", img)
     
     return output_grid
     
@@ -165,13 +177,15 @@ def main(args=None):
 
 if __name__ == '__main__':
     # examine image
+    IMG = "./assets/tetris_screen_cleaned.jpeg" # dummy image path for now
+
     img = cv.imread(IMG)
     show_close("Show Plain image", img)
-    grid_pts = [(),(),(),()] # dummy
-    # draw to test
-
-    get_matrix_fill()
-    
+    # grid_pts = [(420, 250), (1000, 250), (1000, 1400), (420, 1400)] # dummy for start_tetris_cleaned.jpeg
+    grid_pts = [(255, 150), (810, 150), (810, 1290), (255, 1290)] # dummy for tetris_screen_clean.jpeg
+    fresh_img = cv.imread(IMG)
+    check_grid = get_matrix_fill(fresh_img, grid_pts)
+    check_fill(img, check_grid)
 
     # grayscale = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     # show_close("Grayscaled", grayscale)
