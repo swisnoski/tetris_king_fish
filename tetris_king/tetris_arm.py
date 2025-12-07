@@ -67,21 +67,34 @@ class TetrisArm(Node):
 
         # Get desired end-effector based on action
         desired_action = msg.data
-        desired_ee = self.action[desired_action].copy()
+
+        p1 = self.action[desired_action]
+        p2 = self.action["home"]
+
+        steps = 10
+        delay = 0.02
 
         # Move arm down and up
-        if not self.mc.is_moving():
-            self.mc.sync_send_angles(desired_ee, 100, timeout=0.5)
-            self.mc.clear_queue()
-            self.mc.sync_send_angles(self.action["home"], 100, timeout=0.5)
-            self.mc.clear_queue()
-            self.mc.sync_send_angles(desired_ee, 100, timeout=0.5)
-            self.mc.clear_queue()
-            self.mc.sync_send_angles(self.action["home"], 100, timeout=0.5)
-            self.mc.clear_queue()
+        for start, end in [(p1, p2), (p2, p1), (p1, p2), (p2, p1)]:
+            frames = self.interpolate_angles(start, end, steps)
+            for f in frames:
+                self.mc.send_angles(f, 100)
+                time.sleep(delay)
 
         end_time = time.perf_counter()
         self.get_logger().info(f"Elapsed Time: {end_time - start_time}")
+
+    def interpolate_angles(self, a_from, a_to, steps):
+        """
+        Generates steps from starting location to end location
+        """
+        a_from = np.array(a_from, dtype=float)
+        a_to = np.array(a_to, dtype=float)
+        frames = []
+        for t in range(1, steps + 1):
+            alpha = t / float(steps)
+            frames.append(((1 - alpha) * a_from + alpha * a_to).tolist())
+        return frames
 
 
 def main(args=None):
