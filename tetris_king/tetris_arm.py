@@ -19,7 +19,20 @@ class TetrisArm(Node):
     Class to initialize and establish subscriber/publisher interaction
     """
 
-    action = {"rotate": [], "hold": [], "left": [], "right": [], "down": []}
+    action = {
+        "rotate": [
+            26.27308995340352,
+            -30.979178108247265,
+            -148.92517371250526,
+            89.90429191996739,
+            -0.00027870407373753074,
+            0,
+        ],
+        "hold": [],
+        "left": [],
+        "right": [],
+        "down": [],
+    }
 
     def __init__(self):
         super().__init__("tetris_arm")
