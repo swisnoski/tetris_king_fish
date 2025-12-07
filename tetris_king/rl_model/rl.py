@@ -6,35 +6,87 @@ from collections import deque
 import torch
 import torch.nn as nn
 import torch.optim as optim
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from tetris_king.tetris_sim.tetris_rl import Tetris_RL
 
 
-# Add the tetris_king_fish directory to Python path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+class DuelingDQN(nn.Module):
+    def __init__(self, board_shape, piece_info_size, action_size):
+        super(DuelingDQN, self).__init__()
 
+        self.board_height, self.board_width = board_shape
 
-# Defining the model
-class DQN(nn.Module):
-    def __init__(self, state_size, action_size):
-        super(DQN, self).__init__()
-        self.fc1 = nn.Linear(state_size, 256)
-        self.fc2 = nn.Linear(256, 256)
-        self.fc3 = nn.Linear(256, 128)
-        self.fc4 = nn.Linear(128, action_size)
-        self.dropout = nn.Dropout(0.1)
+        # CNN for board - NO pooling, preserve spatial information
+        self.conv = nn.Sequential(
+            nn.Conv2d(1, 64, kernel_size=3, padding=1),  # 64 x 20 x 10
+            nn.ReLU(),
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),  # 128 x 20 x 10
+            nn.ReLU(),
+            nn.Conv2d(128, 128, kernel_size=3, padding=1),  # 128 x 20 x 10
+            nn.ReLU(),
+            nn.Conv2d(
+                128, 64, kernel_size=1
+            ),  # 64 x 20 x 10 (1x1 conv to reduce channels)
+            nn.ReLU(),
+            nn.Flatten(),  # 64 * 20 * 10 = 12800
+        )
 
-    def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = self.dropout(x)
-        x = torch.relu(self.fc2(x))
-        x = self.dropout(x)
-        x = torch.relu(self.fc3(x))
-        return self.fc4(x)
+        self.cnn_output_size = 64 * 20 * 10  # 12800
+
+        # Piece encoder
+        self.piece_encoder = nn.Sequential(
+            nn.Linear(piece_info_size, 128),
+            nn.ReLU(),
+            nn.Linear(128, 128),
+            nn.ReLU(),
+        )
+
+        # Combined size
+        combined_size = self.cnn_output_size + 128
+
+        # Shared layers
+        self.shared = nn.Sequential(
+            nn.Linear(combined_size, 1024),
+            nn.ReLU(),
+            nn.Linear(1024, 512),
+            nn.ReLU(),
+        )
+
+        # Value stream
+        self.value_stream = nn.Sequential(
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Linear(256, 1),
+        )
+
+        # Advantage stream
+        self.advantage_stream = nn.Sequential(
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Linear(256, action_size),
+        )
+
+    def forward(self, board, piece_info):
+        board = board.unsqueeze(1)  # Add channel dim
+
+        board_features = self.conv(board)
+        piece_features = self.piece_encoder(piece_info)
+
+        combined = torch.cat([board_features, piece_features], dim=1)
+        shared_features = self.shared(combined)
+
+        value = self.value_stream(shared_features)
+        advantage = self.advantage_stream(shared_features)
+
+        q_values = value + (advantage - advantage.mean(dim=1, keepdim=True))
+        return q_values
 
 
 # env = gym.make("CartPole-v1")
 env = Tetris_RL()
-state_size = 38
+board_shape = (20, 10)
+state_size = 28
 action_size = 44
 
 # Hyperparameters
@@ -52,17 +104,33 @@ memory = deque(maxlen=memory_size)
 device = torch.device("cuda")
 
 # Policy and target network
-policy_net = DQN(state_size, action_size).to(device)
-target_net = DQN(state_size, action_size).to(device)
+policy_net = DuelingDQN(board_shape, state_size, action_size).to(device)
+target_net = DuelingDQN(board_shape, state_size, action_size).to(device)
 target_net.load_state_dict(policy_net.state_dict())
 target_net.eval()
 
 optimizer = optim.Adam(policy_net.parameters(), lr=learning_rate)
-loss_fn = nn.MSELoss()
+loss_fn = nn.SmoothL1Loss()
+
+
+def process_state(state):
+    """
+    Convert raw state to board and piece_info tensors.
+    Adjust this based on your actual state format.
+    """
+    # Assuming state contains:
+    # - board: 20x10 matrix
+    # - current_piece: piece id (0-6)
+    # - next_pieces: list of upcoming piece ids
+
+    # Example - adjust based on your actual state structure:
+    board = np.array(state["board"])
+    piece_info = state["piece_info"]
+    return board, piece_info
 
 
 # Explore or exploit
-def get_action(state, epsilon, valid_moves):
+def get_action(board, piece_info, epsilon, valid_moves):
     if random.random() < epsilon:
         actions = [i for i in range(action_size) if valid_moves[i] == 1]
         # try:
@@ -72,18 +140,16 @@ def get_action(state, epsilon, valid_moves):
         #     exit(0)
         return random.choice(actions)
     else:
-        state = torch.FloatTensor(state).unsqueeze(0).to(device)
+        board_tensor = torch.FloatTensor(board).unsqueeze(0).to(device)
+        piece_tensor = torch.FloatTensor(piece_info).unsqueeze(0).to(device)
+
         with torch.no_grad():
-            q_values = policy_net(state)
+            q_values = policy_net(board_tensor, piece_tensor)
 
-        # Convert valid_moves list to boolean tensor (True where move is valid)
+        # Mask invalid moves
         valid_mask = torch.BoolTensor(valid_moves).to(device)
-        invalid_mask = ~valid_mask  # Invert: True where move is INvalid (0 in list)
+        q_values[0, ~valid_mask] = -float("inf")
 
-        # Set Q-values of illegal moves to Negative Infinity
-        q_values[0, invalid_mask] = -float("inf")
-
-        # Now select the action
         return q_values.argmax().item()
 
 
@@ -94,19 +160,24 @@ def replay():
 
     minibatch = random.sample(memory, batch_size)
 
-    states, actions, rewards, next_states, dones = zip(*minibatch)
+    boards, piece_infos, actions, rewards, next_boards, next_piece_infos, dones = zip(
+        *minibatch
+    )
 
-    states = torch.FloatTensor(states).to(device)
+    boards = torch.FloatTensor(np.array(boards)).to(device)
+    piece_infos = torch.FloatTensor(np.array(piece_infos)).to(device)
+    next_boards = torch.FloatTensor(np.array(next_boards)).to(device)
+    next_piece_infos = torch.FloatTensor(np.array(next_piece_infos)).to(device)
+
     actions = torch.LongTensor(actions).unsqueeze(1).to(device)
     rewards = torch.FloatTensor(rewards).unsqueeze(1).to(device)
-    next_states = torch.FloatTensor(next_states).to(device)
     dones = torch.FloatTensor(dones).unsqueeze(1).to(device)
 
     # Current Q values
-    current_q = policy_net(states).gather(1, actions)
+    current_q = policy_net(boards, piece_infos).gather(1, actions)
 
     # Target Q values
-    next_q = target_net(next_states).max(1)[0].detach().unsqueeze(1)
+    next_q = target_net(boards, piece_infos).max(1)[0].detach().unsqueeze(1)
     target_q = rewards + (gamma * next_q * (1 - dones))
 
     loss = loss_fn(current_q, target_q)
@@ -127,22 +198,20 @@ def main():
     for episode in range(episodes):
         # reset_result = env.reset()
         # state = reset_result[0] if isinstance(reset_result, tuple) else reset_result
-        state, valid_mask = env.initialize()
+        board, piece_info, valid_mask = env.initialize()
         total_reward = 0
 
         for _ in range(1000):
-            action = get_action(state, epsilon, valid_mask)
+            action = get_action(board, piece_info, epsilon, valid_mask)
             step_result = env.step(action + 1)
 
-            # if len(step_result) == 5:
-            #     next_state, reward, terminated, truncated, _ = step_result
-            #     done = terminated or truncated
-            # else:
-            #     next_state, reward, done, _ = step_result
-            next_state, reward, done, _, valid_mask = step_result
+            next_board, next_piece_info, reward, done, _, valid_mask = step_result
 
-            memory.append((state, action, reward, next_state, done))
-            state = next_state
+            memory.append(
+                (board, piece_info, action, reward, next_board, next_piece_info, done)
+            )
+            board = next_board
+            piece_info = next_piece_info
             total_reward += reward
 
             replay()
@@ -156,7 +225,7 @@ def main():
             target_net.load_state_dict(policy_net.state_dict())
 
         lc += env.lines_cleared
-        if episode % 100 == 0:
+        if episode % 1 == 0:
             print(
                 f"Episode {episode}, Total Reward: {total_reward}, Epsilon: {epsilon:.3f}, LC: {lc}"
             )

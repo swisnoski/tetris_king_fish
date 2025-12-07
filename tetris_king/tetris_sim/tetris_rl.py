@@ -64,8 +64,8 @@ class Tetris_RL(Tetris):
         self.spawn_piece()
         # print(self.current_piece.type)
         valid_moves = find_legal_moves(self.board, self.current_piece.type)
-        state = self.state_returner()
-        return state, valid_moves
+        board, piece_info = self.state_returner()
+        return board, piece_info, valid_moves
 
     def reset(self):
         self.board = np.zeros((self.HEIGHT + 3, self.WIDTH + 2))
@@ -103,7 +103,7 @@ class Tetris_RL(Tetris):
 
         self.spawn_piece()
 
-        next_state = self.state_returner()
+        next_board, next_piece_info = self.state_returner()
 
         new_score = score_board(self.board)
 
@@ -122,7 +122,7 @@ class Tetris_RL(Tetris):
         #     f"Step: {self.iteration}, Reward: {reward}, Done: {done}, Lines Cleared: {self.lines_cleared}"
         # )
 
-        return next_state, reward, done, self.iteration, valid_moves
+        return next_board, next_piece_info, reward, done, self.iteration, valid_moves
 
     def execute_moves(self, r, t):
 
@@ -151,14 +151,13 @@ class Tetris_RL(Tetris):
                 self.piece_y += 1
 
     def state_returner(self):
+        board = self.board[2:-1, 1:-1]
+
         column_counts = []
-        for col in range(1, 11):
-            count = np.sum(self.board[:, col] == 2) - 1
-            column_counts.append(count)
         column_counts.extend(PIECE_ENCODING[self.current_piece.type])
         for next_piece in self.next_pieces:
             column_counts.extend(PIECE_ENCODING[next_piece])
-        return column_counts
+        return board, column_counts
 
 
 def detect_collision_normal(board, piece, x, y):
