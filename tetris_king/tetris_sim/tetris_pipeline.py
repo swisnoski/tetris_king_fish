@@ -1,4 +1,4 @@
-from tetris import Tetris
+from tetris import Tetris, Piece, LOCATIONS
 from tetris_max import find_best_move
 import numpy as np
 
@@ -37,6 +37,16 @@ class Tetris_PIPE(Tetris):
         self.next_pieces = ["T", "T", 'T']
 
 
+
+    def update_piece(self, type):
+        # create a new piece
+        self.current_piece = Piece(type)
+        spawn_location = LOCATIONS[type]
+        self.piece_x = spawn_location[0]
+        self.piece_y = spawn_location[1]
+
+
+
     def execute_moves(self, r, t):
         self.current_piece.rotate(n_rotations=r)
         self.piece_x += t
@@ -58,26 +68,3 @@ class Tetris_PIPE(Tetris):
                 self.check_and_clear_tetris()
             else:
                 self.piece_y += 1
-
-
-
-
-
-
-
-
-
-
-def main():
-    my_tetris_PIPE = Tetris_PIPE()
-    while True:
-            my_tetris_PIPE.spawn_piece()
-            # update_from_cv()
-
-            # print(f"Board before move:\n{my_tetris_PIPE.board[2:-1,1:-1]}")
-
-            r, t = find_best_move(my_tetris_PIPE.board, my_tetris_PIPE.current_piece.type)
-            my_tetris_PIPE.execute_moves(r, t) #update the board, no need to display
-
-if __name__ == "__main__":
-    main()

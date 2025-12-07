@@ -36,6 +36,7 @@ def video_to_frame(cap):
         return ret, frame
     else:
         print("Error: Could not read a frame from the sequence.")
+        return None
 
 def initialize_grid(img):
     """
@@ -47,53 +48,50 @@ def initialize_grid(img):
     check_grid = game_state_detection.initalize_matrix_fill(img, pts)
     return check_grid
 
-
-def get_cv_info():
+def get_cv_info(cap):
     """
     Final function called by game super loop that returns game_state matrix and current_piece
+
+    Args:
+    - cap: CV VideoCapture object
+
+    Returns:
+    - tuple of game_state, current_piece
     """
-    pass
+    game_state = None
+    current_piece = None
+    ret, img = video_to_frame(cap) 
+    if ret: # if got frame correctly, check fill
+        game_state, current_piece = process_image(img)
+    print(game_state, current_piece)
+    return game_state, current_piece
 
-def main():
+def process_image(img):
+    print("Got frame")
+    # get grid_pts
+    grid_img = img.copy()
+    grid_pts = initialize_grid(grid_img) 
+    # get game_state matrix
+    game_state = game_state_detection.check_fill(img, grid_pts)
+    # get current piece
+    current_piece = game_state_detection.get_current_piece(img, grid_pts, game_state)
+    # print(current_piece)
+    return game_state, current_piece
+
+def test_frame():
     """
-    Mock game system pipeline with video feed, abstracting away model + arm.
+    Mock game system pipeline with image path, abstracting away model + arm.
     """
-    # initalize video
-    initialized = False
-    cap = initialize_video_capture()
-    if cap: # get initial frame to process
-        ret, img = video_to_frame(cap) 
+    img_path = "./assets/versus.jpg" # dummy image path for now
 
-        if ret:
-            # later once: initalize grid ONCE
-            # print(f'img before initial: {img}')
-            grid_pts = initialize_grid(img)
-            print("Initalized Grid")
-            initialized = True
+    img = cv.imread(img_path)
 
-    # try:
-    while initialized:
-        try:
-            print("In loop now")
-            current_piece = None
-            ret, img = video_to_frame(cap) 
-            if ret: # if got frame, check fill
-                grid_pts = initialize_grid(img) # get grid_pts
-                game_grid = game_state_detection.check_fill(img, grid_pts)
-                current_piece = game_state_detection.get_current_piece(img, grid_pts, game_grid, current_piece)
-                print(current_piece)
-        except KeyboardInterrupt:
-            print("Loop ended")
+    game_state = None
+    current_piece = None
+    game_state, current_piece = process_image(img)
+    return game_state, current_piece
 
-    # loop:
-    # # read in game state -> send out flag for if different (piece placed)
-    # game_state_detection.check_fill()
-    # # if game_updated:
-    #     # do stuff
-    # # read in current piece -> update only if different
-    # current_piece = game_state_detection.get_current_piece()
-    # while True:
-    #     img = video_to_frame()
-    
 if __name__ == "__main__":
-    main()
+    test_frame()
+    # cap = initialize_video_capture()
+    # game_state, current_piece = get_cv_info(cap)

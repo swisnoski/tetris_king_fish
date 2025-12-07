@@ -20,14 +20,17 @@ WARPED_HEIGHT = 50 * GRID_HEIGHT # 1000 pixels tall
 # OpenCV uses BGR
 COLOR_MAP = {
     # "EMPTY": [0, 0, 0],         # Background
-    "I_PIECE": [245, 106, 0],     # Dark
-    "J_PIECE": [240, 60, 0],    # Dark Blue
-    "L_PIECE": [85, 96, 226],   # Orange
-    "O_PIECE": [120, 160, 170],   # Yellow
-    "S_PIECE": [155, 200, 0],     # Green
-    "T_PIECE": [209, 19, 74],   # Purple
-    "Z_PIECE": [61, 17, 202],     # Red
+    "I": [245, 106, 0],     # Dark
+    "J": [240, 60, 0],    # Dark Blue
+    "L": [85, 96, 226],   # Orange
+    "O": [120, 160, 170],   # Yellow
+    "S": [155, 200, 0],     # Green
+    "T": [209, 19, 74],   # Purple
+    "Z": [61, 17, 202],     # Red
+    "GRAY": [215, 215, 215]
 }
+
+GRAY_BLOCK = [215, 215, 215] # for the inserted puyo puyo fill blocks
 
 offset_cell_x = 0 # deal with code scoping later
 
@@ -100,25 +103,25 @@ def check_fill(img, check_grid):
             y, x = cell
             pixel = img[y, x]
             # print(f'pixel: {pixel}')
-            # check that any BGR over threhold --> colored
+            # print("check fill")
             if classify_cell_color(pixel):
-            # if any(channel > 100 for channel in pixel): # RN: somewhat abritrary threshold
              # access image at row pixel, col pixel
+                print("filled")
                 game_state_grid[i][j] = 1
                 # verify visually with a green dot
                 cv.circle(img, (x, y), 5, (0, 255, 0), -1) 
-            else: # from not filled pieces, check for ghost piece (current piece's outline)
-                # check both 2 points piece outward off from center (L & R)
-                ghost_offset = offset_cell_x * 0.6 # lol 50 * 0.6 for 30%?
-                left_pixel = img[y, int(x - ghost_offset)]
-                hsv_left = cv.cvtColor(np.uint8([[left_pixel]]), cv.COLOR_BGR2HSV)[0][0]
-                right_pixel = img[y, int(x + ghost_offset)]
-                hsv_right = cv.cvtColor(np.uint8([[right_pixel]]), cv.COLOR_BGR2HSV)[0][0]
-                hue_threshold = 286 / 2 # 286 regular divided by 2 for opencv scale; 145
-                # print(hsv_left[0], hsv_right[0])
-                if hsv_left[0] > hue_threshold and hsv_right[0] > hue_threshold:
-                    game_state_grid[i][j] = 2 # then ghost piece
-                    cv.circle(img, (x, y), 5, (255, 0, 0), -1) # check with bllue overlay
+            # else: # from not filled pieces, check for ghost piece (current piece's outline)
+            #     # check both 2 points piece outward off from center (L & R)
+            #     ghost_offset = offset_cell_x * 0.6 # lol 50 * 0.6 for 30%?
+            #     left_pixel = img[y, int(x - ghost_offset)]
+            #     hsv_left = cv.cvtColor(np.uint8([[left_pixel]]), cv.COLOR_BGR2HSV)[0][0]
+            #     right_pixel = img[y, int(x + ghost_offset)]
+            #     hsv_right = cv.cvtColor(np.uint8([[right_pixel]]), cv.COLOR_BGR2HSV)[0][0]
+            #     hue_threshold = 286 / 2 # 286 regular divided by 2 for opencv scale; 145
+            #     # print(hsv_left[0], hsv_right[0])
+            #     if hsv_left[0] > hue_threshold and hsv_right[0] > hue_threshold:
+            #         game_state_grid[i][j] = 2 # then ghost piece
+            #         cv.circle(img, (x, y), 5, (255, 0, 0), -1) # check with bllue overlay
     
     show_close("Check Fill", img)
 
@@ -135,7 +138,7 @@ def get_player_pieces():
     - a list in order of current -> next hold pieces
     """
 
-def get_current_piece(img, coords_grid, game_state_grid, last_current):
+def get_current_piece(img, coords_grid, game_state_grid):
     """
     Detect and return what the current piece is
     """
@@ -151,12 +154,20 @@ def get_current_piece(img, coords_grid, game_state_grid, last_current):
             if i < 3:            
                 if cell == 1:
                     pixel = img[coords_grid[i][j]]
-                    print(f'pixel = {pixel}')
-                    result = classify_cell_color(pixel)
-                    print(result)
-    if current_piece is None or current_piece == last_current:
-        current_piece = last_current # check this logic 
+                    # print(f'pixel = {pixel}')
+                    current_piece = classify_cell_color(pixel)
+                    # print(result)
+
+    # return current_piece (either None is no detection, or classified)
     return current_piece
+    # if no piece detected, default to last_current
+    # if result is None: 
+    #     current_piece = last_current
+    # elif result != last_current: # if different as last current piece
+    #     current_piece = result # check this logic 
+    # else: # if result is same as last_current
+    #     current_piece = last_current
+    # return current_piece
 
 # Color tolerance (higher=easier match)
 COLOR_TOLERANCE = 65
@@ -216,8 +227,7 @@ def main(args=None):
         game_state_grid = check_fill(game_state_img, check_grid)
         
         # get current piece
-        last_current_piece = None
-        get_current_piece(frame_to_process, check_grid, game_state_grid, last_current_piece)
+        get_current_piece(frame_to_process, check_grid, game_state_grid)
     else:
         print(f"Failed to load image from path: {img_path}. Check file existence and permissions.")
 
