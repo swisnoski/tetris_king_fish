@@ -30,19 +30,19 @@ class TetrisArm(Node):
         ],
         "hold": [],
         "left": [
-            13.579377778196362,
-            -62.428506532852964,
-            -107.047695372942,
-            79.47642858191479,
-            0.00011509651056966509,
+            22.224149230856394,
+            -62.683497431891574,
+            -106.61694234639404,
+            79.30041567484217,
+            2.1517009588529715e-05,
             0,
         ],
         "right": [
-            13.574220868342843,
-            -63.007718209874454,
-            -105.27181107181333,
-            78.27925744871303,
-            0.0006085890561915545,
+            16.499995231431722,
+            -61.75319033436939,
+            -107.2852511676767,
+            79.0384707772517,
+            -8.59293671689396e-06,
             0,
         ],
         "down": [],
@@ -85,7 +85,11 @@ class TetrisArm(Node):
 
         # Move arm down and up
         if not self.mc.is_moving():
+            self.mc.sync_send_angles(self.action["left"], 100, timeout=0.3)
+            self.mc.sync_send_angles(self.action["home"], 100, timeout=0.3)
             self.mc.sync_send_angles(self.action["right"], 100, timeout=0.3)
+            self.mc.sync_send_angles(self.action["home"], 100, timeout=0.3)
+            self.mc.sync_send_angles(self.action["left"], 100, timeout=0.3)
             self.mc.sync_send_angles(self.action["home"], 100, timeout=0.3)
             self.mc.sync_send_angles(self.action["right"], 100, timeout=0.3)
             self.mc.sync_send_angles(self.action["home"], 100, timeout=0.3)
