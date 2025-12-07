@@ -41,9 +41,13 @@ def video_to_frame(cap):
 def initialize_grid(img):
     """
     Args:
-    - img: 
+    - img: opencv img numpy obj ect 
     """
+    pts = None
+    # while pts is None:
     pts = grid_detection.get_grid_coords(img)
+    if pts is None:
+        return
     # print(pts)
     check_grid = game_state_detection.initalize_matrix_fill(img, pts)
     return check_grid
@@ -67,10 +71,15 @@ def get_cv_info(cap):
     return game_state, current_piece
 
 def process_image(img):
+    """
+    Helper function for all things just needing an img, with game_state and fill detection
+    """
     print("Got frame")
     # get grid_pts
     grid_img = img.copy()
     grid_pts = initialize_grid(grid_img) 
+    if grid_pts is None: # abort and try again
+        return
     # get game_state matrix
     game_state = game_state_detection.check_fill(img, grid_pts)
     # get current piece
@@ -82,7 +91,7 @@ def test_frame():
     """
     Mock game system pipeline with image path, abstracting away model + arm.
     """
-    img_path = "./assets/versus.jpg" # dummy image path for now
+    img_path = "./assets/start_tetris_cleaned.jpg" # test image path
 
     img = cv.imread(img_path)
 
@@ -91,7 +100,16 @@ def test_frame():
     game_state, current_piece = process_image(img)
     return game_state, current_piece
 
+def test_video_once():
+    cap = initialize_video_capture()
+    game_state, current_piece = get_cv_info(cap)
+
+def test_video_loop():
+    cap = initialize_video_capture()
+    while True:
+        game_state, current_piece = get_cv_info(cap)
+
 if __name__ == "__main__":
-    test_frame()
-    # cap = initialize_video_capture()
-    # game_state, current_piece = get_cv_info(cap)
+    # test_frame()
+    test_video_loop()
+    
