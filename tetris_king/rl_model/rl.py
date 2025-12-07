@@ -1,6 +1,5 @@
 import sys
 from pathlib import Path
-import gymnasium as gym
 import random
 import numpy as np
 from collections import deque
@@ -18,14 +17,19 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 class DQN(nn.Module):
     def __init__(self, state_size, action_size):
         super(DQN, self).__init__()
-        self.fc1 = nn.Linear(state_size, 69)
-        self.fc2 = nn.Linear(69, 69)
-        self.fc3 = nn.Linear(69, action_size)
+        self.fc1 = nn.Linear(state_size, 256)
+        self.fc2 = nn.Linear(256, 256)
+        self.fc3 = nn.Linear(256, 128)
+        self.fc4 = nn.Linear(128, action_size)
+        self.dropout = nn.Dropout(0.1)
 
     def forward(self, x):
         x = torch.relu(self.fc1(x))
+        x = self.dropout(x)
         x = torch.relu(self.fc2(x))
-        return self.fc3(x)
+        x = self.dropout(x)
+        x = torch.relu(self.fc3(x))
+        return self.fc4(x)
 
 
 # env = gym.make("CartPole-v1")
@@ -36,10 +40,10 @@ action_size = 44
 # Hyperparameters
 gamma = 0.99
 epsilon_min = 0.01
-epsilon_decay = 0.9999
-learning_rate = 0.001
-batch_size = 64
-memory_size = 50000
+epsilon_decay = 0.995
+learning_rate = 0.0005
+batch_size = 128
+memory_size = 100000
 
 
 # Auto removing old memory above memory size
