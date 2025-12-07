@@ -135,7 +135,7 @@ def get_player_pieces():
     - a list in order of current -> next hold pieces
     """
 
-def get_current_piece(img, coords_grid, game_state_grid, last_current):
+def get_current_piece(img, coords_grid, game_state_grid):
     """
     Detect and return what the current piece is
     """
@@ -146,23 +146,25 @@ def get_current_piece(img, coords_grid, game_state_grid, last_current):
         # --> also matches how actual players see the current piece first
     # mvp clunky heuristic checking top of screen with 2 block gap
     current_piece = None
-    result = None
     for i, row in enumerate(game_state_grid):
         for j, cell in enumerate(row):
             if i < 3:            
                 if cell == 1:
                     pixel = img[coords_grid[i][j]]
-                    print(f'pixel = {pixel}')
-                    result = classify_cell_color(pixel)
-                    print(result)
-    # if no piece detected, default to last_current
-    if result is None: 
-        current_piece = last_current
-    elif result != last_current: # if different as last current piece
-        current_piece = result # check this logic 
-    else: # if result is same as last_current
-        current_piece = last_current
+                    # print(f'pixel = {pixel}')
+                    current_piece = classify_cell_color(pixel)
+                    # print(result)
+
+    # return current_piece (either None is no detection, or classified)
     return current_piece
+    # if no piece detected, default to last_current
+    # if result is None: 
+    #     current_piece = last_current
+    # elif result != last_current: # if different as last current piece
+    #     current_piece = result # check this logic 
+    # else: # if result is same as last_current
+    #     current_piece = last_current
+    # return current_piece
 
 # Color tolerance (higher=easier match)
 COLOR_TOLERANCE = 65

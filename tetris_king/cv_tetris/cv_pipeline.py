@@ -49,13 +49,12 @@ def initialize_grid(img):
     return check_grid
 
 
-def get_cv_info(cap, last_piece):
+def get_cv_info(cap):
     """
     Final function called by game super loop that returns game_state matrix and current_piece
 
     Args:
     - cap: CV VideoCapture object
-    - last_piece: last current_piece, updates if different
 
     Returns:
     - tuple of game_state, current_piece
@@ -70,8 +69,8 @@ def get_cv_info(cap, last_piece):
         # get game_state matrix
         game_state = game_state_detection.check_fill(img, grid_pts)
         # get current piece
-        current_piece = game_state_detection.get_current_piece(img, grid_pts, game_state, last_piece)
-        print(current_piece)
+        current_piece = game_state_detection.get_current_piece(img, grid_pts, game_state)
+        # print(current_piece)
     print(game_state, current_piece)
     return game_state, current_piece
 
@@ -106,17 +105,6 @@ def main():
         except KeyboardInterrupt:
             print("Loop ended")
 
-    # loop:
-    # # read in game state -> send out flag for if different (piece placed)
-    # game_state_detection.check_fill()
-    # # if game_updated:
-    #     # do stuff
-    # # read in current piece -> update only if different
-    # current_piece = game_state_detection.get_current_piece()
-    # while True:
-    #     img = video_to_frame()
-    
 if __name__ == "__main__":
     cap = initialize_video_capture()
-    last_piece = "I"
-    game_state, current_piece = get_cv_info(cap, last_piece)
+    game_state, current_piece = get_cv_info(cap)
