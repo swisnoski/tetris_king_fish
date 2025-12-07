@@ -36,10 +36,11 @@ action_size = 44
 # Hyperparameters
 gamma = 0.99
 epsilon_min = 0.01
-epsilon_decay = 0.995
+epsilon_decay = 0.9999
 learning_rate = 0.001
 batch_size = 64
-memory_size = 10000
+memory_size = 50000
+
 
 # Auto removing old memory above memory size
 memory = deque(maxlen=memory_size)
@@ -59,13 +60,19 @@ loss_fn = nn.MSELoss()
 # Explore or exploit
 def get_action(state, epsilon, valid_moves):
     if random.random() < epsilon:
-        return random.choice(range(action_size))
+        actions = [i for i in range(action_size) if valid_moves[i] == 1]
+        # try:
+        #     act = random.choice(actions)
+        # except IndexError:
+        #     print(f"Valid_moves: {valid_moves}")
+        #     exit(0)
+        return random.choice(actions)
     else:
         state = torch.FloatTensor(state).unsqueeze(0).to(device)
         with torch.no_grad():
             q_values = policy_net(state)
 
-        # Convert valid_moves list to boolean tensor (True where move is invalid)
+        # Convert valid_moves list to boolean tensor (True where move is valid)
         valid_mask = torch.BoolTensor(valid_moves).to(device)
         invalid_mask = ~valid_mask  # Invert: True where move is INvalid (0 in list)
 
@@ -105,12 +112,13 @@ def replay():
     optimizer.step()
 
 
-episodes = 500
-target_update_freq = 10
+episodes = 15000
+target_update_freq = 500
 
 
 def main():
     epsilon = 1.0
+    lc = 0
 
     for episode in range(episodes):
         # reset_result = env.reset()
@@ -118,7 +126,7 @@ def main():
         state, valid_mask = env.initialize()
         total_reward = 0
 
-        for _ in range(500):
+        for _ in range(1000):
             action = get_action(state, epsilon, valid_mask)
             step_result = env.step(action + 1)
 
@@ -143,11 +151,14 @@ def main():
         if episode % target_update_freq == 0:
             target_net.load_state_dict(policy_net.state_dict())
 
-        env.reset()
+        lc += env.lines_cleared
+        if episode % 100 == 0:
+            print(
+                f"Episode {episode}, Total Reward: {total_reward}, Epsilon: {epsilon:.3f}, LC: {lc}"
+            )
+            lc = 0
 
-        print(
-            f"Episode {episode}, Total Reward: {total_reward}, Epsilon: {epsilon:.3f}"
-        )
+        env.reset()
 
     torch.save(policy_net.state_dict(), "model.pt")
 

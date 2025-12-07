@@ -28,6 +28,7 @@ PIECE_ENCODING = {
 class Tetris_RL(Tetris):
     def __init__(self):
         # super().__init__()
+        self.lines_cleared = 0
         self.iteration = 0
         self.last_score = 0
 
@@ -61,7 +62,7 @@ class Tetris_RL(Tetris):
 
     def initialize(self):
         self.spawn_piece()
-        print(self.current_piece.type)
+        # print(self.current_piece.type)
         valid_moves = find_legal_moves(self.board, self.current_piece.type)
         state = self.state_returner()
         return state, valid_moves
@@ -73,6 +74,21 @@ class Tetris_RL(Tetris):
         self.board[:, -1] = 5
 
         self.current_piece = None
+        self.lines_cleared = 0
+        self.iteration = 0
+
+    def check_and_clear_tetris(self):
+        # let's find full rows
+        tetris_rows = []
+        for row in range(2, self.HEIGHT + 2):
+            if all(self.board[row][1:-1] == 2):
+                tetris_rows.append(row)
+
+        # then, let's clear them
+        for row in tetris_rows:
+            self.lines_cleared += 1
+            self.board[3 : row + 1, 1:-1] = self.board[2:row, 1:-1]
+            self.board[2, 1:-1] = 0
 
     def step(self, action):
 
@@ -80,6 +96,8 @@ class Tetris_RL(Tetris):
 
         r = (action - 1) // 11
         t = (action - 1) % 11 - 5
+
+        # print(f"r: {r}, t: {t}, piece: {self.current_piece.type}")
 
         self.execute_moves(r, t)
 
@@ -92,19 +110,25 @@ class Tetris_RL(Tetris):
         reward = new_score - current_score
 
         done = self.check_loss()
+        valid_moves = find_legal_moves(self.board, self.current_piece.type)
+        if all(v == 0 for v in valid_moves):
+            done = True
+
         self.iteration += 1  # Placeholder for iteration count if needed
 
-        print("-----------------------------------")
-        print(f"Next State:\n{self.board}")
-        print(f"Step: {self.iteration}, Reward: {reward}, Done: {done}")
-
-        valid_moves = find_legal_moves(self.board, self.current_piece.type)
+        # print("-----------------------------------")
+        # print(f"Next State:\n{self.board}")
+        # print(
+        #     f"Step: {self.iteration}, Reward: {reward}, Done: {done}, Lines Cleared: {self.lines_cleared}"
+        # )
 
         return next_state, reward, done, self.iteration, valid_moves
 
     def execute_moves(self, r, t):
 
         # rotate and move the piece
+        if self.current_piece.type == "I" and r > 1:
+            r = 1
         self.current_piece.rotate(n_rotations=r)
         self.piece_x += t
 

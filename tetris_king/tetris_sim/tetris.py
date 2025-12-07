@@ -287,7 +287,7 @@ class Tetris:
     def check_loss(self):
         for cell in self.board[1]:
             if cell == 2:
-                print("Game Over!")
+                # print("Game Over!")
                 # pygame.quit()
                 return True
                 # sys.exit()

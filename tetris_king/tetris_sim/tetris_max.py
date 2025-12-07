@@ -18,10 +18,9 @@ POSSIBILITIES = {
 class Tetris_MAX(Tetris):
     def __init__(self):
         super().__init__()
-        self.last_move_time = 0 
-        self.MOVETIME = 1 
+        self.last_move_time = 0
+        self.MOVETIME = 1
         self.iteration = 0
-
 
     def auto_loop(self):
         while True:
@@ -30,33 +29,33 @@ class Tetris_MAX(Tetris):
             r, t = find_best_move(self.board, self.current_piece.type)
 
             # print(t, r)
-            self.execute_moves(r, t) # display_board is called within this function 
+            self.execute_moves(r, t)  # display_board is called within this function
 
     def execute_moves(self, r, t):
         # loop until
         piece_in_place = False
-        while piece_in_place is False: 
+        while piece_in_place is False:
             self.time += self.clock.get_time()
             self.clear_piece()
 
-            # check if move 
+            # check if move
             if self.time - self.last_move_time > self.MOVETIME:
                 if r > 0:
                     self.current_piece.rotate()
-                    r-=1
+                    r -= 1
                     self.place_piece()
 
-                elif t > 0: 
+                elif t > 0:
                     self.piece_x += 1
-                    t-=1
+                    t -= 1
                     self.place_piece()
 
                 elif t < 0:
                     self.piece_x -= 1
-                    t+=1
+                    t += 1
                     self.place_piece()
 
-                else: 
+                else:
                     if self.detect_collision(offset_y=1):
                         for i in range(self.current_piece.height):
                             for j in range(self.current_piece.width):
@@ -197,8 +196,6 @@ def find_best_move(board, piece_type):
                     top_score = run_score
 
     return top_position
-
-
 
 
 def main():
