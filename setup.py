@@ -18,6 +18,9 @@ setup(
     license="TODO: License declaration",
     tests_require=["pytest"],
     entry_points={
-        "console_scripts": ["tetris_arm = tetris_king.tetris_arm:main"],
+        "console_scripts": [
+            "tetris_arm = tetris_king.tetris_arm:main",
+            "mock_decision = tetris_king.mock_decision:main",
+        ],
     },
 )

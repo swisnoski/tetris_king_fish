@@ -5,7 +5,7 @@ ROS node to move myCobot 280 arm
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import String
 
 from pymycobot import MyCobot280
 import numpy as np
@@ -19,6 +19,8 @@ class TetrisArm(Node):
     Class to initialize and establish subscriber/publisher interaction
     """
 
+    action = {"rotate": [], "hold": [], "left": [], "right": [], "down": []}
+
     def __init__(self):
         super().__init__("tetris_arm")
         # Connect to mycobot arm
@@ -30,53 +32,29 @@ class TetrisArm(Node):
         self.mc.send_angles([0, 0, 0, 0, 0, 0], 30)
         self.get_logger().info("Reset arm")
 
-        # Subscribe to desired pose
+        # Subscribe to action
         self.subscription = self.create_subscription(
-            Float32MultiArray, "/desired_pose", self.listener_callback, 10
+            String, "/action", self.listener_callback, 10
         )
 
     def listener_callback(self, msg):
         """
         Get desired pose from topic, perform IK, then move arm
         """
-        desired_ee = np.array(msg.data)
-        self.get_logger().info(f"Desired pose: {desired_ee}")
+        start_time = time.perf_counter()
 
+        # Get desired end-effector based on action
+        desired_action = msg.data
+        desired_ee = self.action[desired_action].copy()
+
+        # Move arm down and up
         if not self.mc.is_moving():
-            # track IK time for future optimization
-            start_time = time.perf_counter()
+            self.mc.send_angles(desired_ee, 100)
+            desired_ee[3] = desired_ee[3] + 10
+            self.mc.send_angles(desired_ee, 100)
 
-            # IK
-            soln, err = inverse_kinematics([0, 0, 0, 0, 0, 0], desired_ee, tol=0.01)
-            soln = util.rad2deg(soln)
-            soln[5] = 0
-
-            ik_done_time = time.perf_counter()
-
-            self.get_logger().info(
-                f"IK time: {(ik_done_time - start_time):.6f} seconds"
-            )
-
-            # log results
-            self.get_logger().info(f"Error: {err}")
-            self.get_logger().info(f"Soln: {soln}")
-
-            # Move arm
-            if err < 0.01:
-                arm_move_start = time.perf_counter()
-                self.mc.send_angles(soln, 100)
-                soln[3] = soln[3] + 20
-                self.mc.send_angles(soln, 100)
-                arm_move_end = time.perf_counter()
-                self.get_logger().info(
-                    f"Move time: {(arm_move_end - arm_move_start):.6f} seconds"
-                )
-            else:
-                self.get_logger().info("Error too high!")
-
-            end_time = time.perf_counter()
-            elapsed_time = end_time - start_time
-            self.get_logger().info(f"Full process time: {elapsed_time:.6f} seconds")
+        end_time = time.perf_counter()
+        self.get_logger().info(f"Elapsed Time: {end_time - start_time}")
 
 
 def main(args=None):
