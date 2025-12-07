@@ -21,8 +21,8 @@ WARPED_HEIGHT = 50 * GRID_HEIGHT # 1000 pixels tall
 COLOR_MAP = {
     "EMPTY": [0, 0, 0],         # Background
     "I_PIECE": [255, 0, 0],     # Blue
-    "J_PIECE": [255, 255, 0],   # Cyan/Yellow
-    "L_PIECE": [0, 165, 255],   # Orange
+    "J_PIECE": [255, 255, 0],   # Cyan
+    "L_PIECE": [85, 96, 226],   # Orange
     "O_PIECE": [0, 255, 255],   # Yellow
     "S_PIECE": [0, 255, 0],     # Green
     "T_PIECE": [128, 0, 128],   # Purple
@@ -88,7 +88,7 @@ def check_fill(img, check_grid):
     - check_grid: a 2D array of tuples, representing the coordinate pixel points of the center of each grid cell
 
     Returns
-     - output_grid: a 2D array of 0s and 1s (0 empty, 1 filled) ex. [[0, 0, 0],[0, 1, 0]]
+     - output_grid: a 2D array of 0s and 1s (0 empty, 1 filled) ex. [[0, 0, 0],[0, 1, 0]], 2 is ghost
     """
     # populate this grid to hold 0 and 1's, should have 200 (grid cell count)
     game_state_grid = [[0 for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
@@ -114,7 +114,7 @@ def check_fill(img, check_grid):
                 right_pixel = img[y, int(x + ghost_offset)]
                 hsv_right = cv.cvtColor(np.uint8([[right_pixel]]), cv.COLOR_BGR2HSV)[0][0]
                 hue_threshold = 286 / 2 # 286 regular divided by 2 for opencv scale; 145
-                print(hsv_left[0], hsv_right[0])
+                # print(hsv_left[0], hsv_right[0])
                 if hsv_left[0] > hue_threshold and hsv_right[0] > hue_threshold:
                     game_state_grid[i][j] = 2 # then ghost piece
                     cv.circle(img, (x, y), 5, (255, 0, 0), -1) # check with bllue overlay
@@ -132,8 +132,7 @@ def get_player_pieces():
     - a list in order of current -> next hold pieces
     """
 
-
-def get_current_piece(game_state_grid):
+def get_current_piece(img, coords_grid, game_state_grid, last_current):
     """
     Detect and return what the current piece is
     """
@@ -142,18 +141,22 @@ def get_current_piece(game_state_grid):
     # should determine this based on the glowing outline at screen bottom
         # --> accounts for when the current piece may not be on the screen yet 
         # --> also matches how actual players see the current piece first
-    # clunky but simple heuristic method:
-        # piece has to be above a certain block height --> detect color
-    
-
-# --- Grid detect thresholds ---
-# TUNE BGR to find grid lines.
-# Used in cv.inRange.
-LOWER_THRESHOLD = np.array([200, 200, 200]) # BGR light colors (placeholder)
-UPPER_THRESHOLD = np.array([255, 255, 255]) # Max BGR (placeholder)
+    # mvp clunky heuristic checking top of screen with 2 block gap
+    current_piece = None
+    for i, row in enumerate(game_state_grid):
+        for j, cell in enumerate(row):
+            if i < 3:            
+                if cell == 1:
+                    pixel = img[coords_grid[i][j]]
+                    print(f'pixel = {pixel}')
+                    result = classify_cell_color(pixel)
+                    print(result)
+    if current_piece is None or current_piece == last_current:
+        current_piece = last_current # check this logic 
+    return current_piece
 
 # Color tolerance (higher=easier match)
-COLOR_TOLERANCE = 30 
+COLOR_TOLERANCE = 50
 # Squared for distance check.
 
 def classify_cell_color(bgr_color: np.ndarray) -> str:
@@ -166,6 +169,8 @@ def classify_cell_color(bgr_color: np.ndarray) -> str:
         
         # Squared distance (B,G,R space).
         distance = np.sum((bgr_color.astype(int) - color_array.astype(int)) ** 2)
+
+        # print(distance)
         
         if distance < min_distance:
             min_distance = distance
@@ -199,11 +204,15 @@ def main(args=None):
         show_close("Show Plain image", frame_to_process)
         # grid_pts = [(420, 250), (1000, 250), (1000, 1400), (420, 1400)] # dummy for start_tetris_cleaned.jpeg
         grid_pts = [(255, 150), (810, 150), (810, 1290), (255, 1290)] # dummy for tetris_screen_clean.jpeg
+        # grid_pts = [(240, 150), (800, 150), (800, 1280), (255, 1280)] # dummy for tetris_current_purple.jpeg
         draw_verification_img = cv.imread(img_path) # copy of image for visualization testing
-
         check_grid = initalize_matrix_fill(draw_verification_img, grid_pts)
-        check_fill(frame_to_process, check_grid)
+        game_state_img = cv.imread(img_path) # copy of image for visualization testing
+        game_state_grid = check_fill(game_state_img, check_grid)
         
+        # get current piece
+        last_current_piece = None
+        get_current_piece(frame_to_process, check_grid, game_state_grid, last_current_piece)
     else:
         print(f"Failed to load image from path: {img_path}. Check file existence and permissions.")
 
