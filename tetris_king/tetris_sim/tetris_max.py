@@ -77,6 +77,9 @@ class Tetris_MAX(Tetris):
             self.clock.tick(500)
 
 
+
+
+
 def detect_collision_normal(board, piece, x, y):
     for i in range(piece.height):
         for j in range(piece.width):
