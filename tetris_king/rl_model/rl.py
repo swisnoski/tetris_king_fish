@@ -92,7 +92,7 @@ action_size = 44
 # Hyperparameters
 gamma = 0.99
 epsilon_min = 0.01
-epsilon_decay = 0.995
+epsilon_decay = 0.9999
 learning_rate = 0.0005
 batch_size = 128
 memory_size = 100000
@@ -225,7 +225,7 @@ def main():
             target_net.load_state_dict(policy_net.state_dict())
 
         lc += env.lines_cleared
-        if episode % 1 == 0:
+        if episode % 100 == 0:
             print(
                 f"Episode {episode}, Total Reward: {total_reward}, Epsilon: {epsilon:.3f}, LC: {lc}"
             )
