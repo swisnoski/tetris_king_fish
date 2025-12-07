@@ -71,17 +71,13 @@ class TetrisArm(Node):
 
         # Move arm down and up
         if not self.mc.is_moving():
-            self.mc.send_angles(desired_ee, 100)
-            time.sleep(0.5)
+            self.mc.sync_send_angles(desired_ee, 100, timeout=0.5)
             self.mc.clear_queue()
-            self.mc.send_angles(self.action["home"], 100)
-            time.sleep(0.5)
+            self.mc.sync_send_angles(self.action["home"], 100, timeout=0.5)
             self.mc.clear_queue()
-            self.mc.send_angles(desired_ee, 100)
-            time.sleep(0.5)
+            self.mc.sync_send_angles(desired_ee, 100, timeout=0.5)
             self.mc.clear_queue()
-            self.mc.send_angles(self.action["home"], 100)
-            time.sleep(0.5)
+            self.mc.sync_send_angles(self.action["home"], 100, timeout=0.5)
             self.mc.clear_queue()
 
         end_time = time.perf_counter()
