@@ -16,8 +16,8 @@ total_time = 0
 
 start_time = time.perf_counter()
 
-desired_ee = [0.2, 0, 0.08]
-soln, err = inverse_kinematics(util.deg2rad([0, 0, 0, 0, 0, 0]), desired_ee, tol=0.01)
+desired_ee = [0.2, -0.01, 0.05]
+soln, err = inverse_kinematics(util.deg2rad([0, 0, 0, 0, 0, 0]), desired_ee, tol=0.001)
 
 print(f"Solution (radians): {soln}")
 
