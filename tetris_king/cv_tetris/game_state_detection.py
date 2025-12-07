@@ -146,6 +146,7 @@ def get_current_piece(img, coords_grid, game_state_grid, last_current):
         # --> also matches how actual players see the current piece first
     # mvp clunky heuristic checking top of screen with 2 block gap
     current_piece = None
+    result = None
     for i, row in enumerate(game_state_grid):
         for j, cell in enumerate(row):
             if i < 3:            
@@ -154,8 +155,13 @@ def get_current_piece(img, coords_grid, game_state_grid, last_current):
                     print(f'pixel = {pixel}')
                     result = classify_cell_color(pixel)
                     print(result)
-    if current_piece is None or current_piece == last_current:
-        current_piece = last_current # check this logic 
+    # if no piece detected, default to last_current
+    if result is None: 
+        current_piece = last_current
+    elif result != last_current: # if different as last current piece
+        current_piece = result # check this logic 
+    else: # if result is same as last_current
+        current_piece = last_current
     return current_piece
 
 # Color tolerance (higher=easier match)

@@ -36,6 +36,7 @@ def video_to_frame(cap):
         return ret, frame
     else:
         print("Error: Could not read a frame from the sequence.")
+        return None
 
 def initialize_grid(img):
     """
@@ -48,11 +49,31 @@ def initialize_grid(img):
     return check_grid
 
 
-def get_cv_info():
+def get_cv_info(cap, last_piece):
     """
     Final function called by game super loop that returns game_state matrix and current_piece
+
+    Args:
+    - cap: CV VideoCapture object
+    - last_piece: last current_piece, updates if different
+
+    Returns:
+    - tuple of game_state, current_piece
     """
-    pass
+    game_state = None
+    current_piece = None
+    ret, img = video_to_frame(cap) 
+    if ret: # if got frame correctly, check fill
+        print("Got frame")
+        # get grid_pts
+        grid_pts = initialize_grid(img) 
+        # get game_state matrix
+        game_state = game_state_detection.check_fill(img, grid_pts)
+        # get current piece
+        current_piece = game_state_detection.get_current_piece(img, grid_pts, game_state, last_piece)
+        print(current_piece)
+    print(game_state, current_piece)
+    return game_state, current_piece
 
 def main():
     """
@@ -96,4 +117,6 @@ def main():
     #     img = video_to_frame()
     
 if __name__ == "__main__":
-    main()
+    cap = initialize_video_capture()
+    last_piece = "I_PIECE"
+    game_state, current_piece = get_cv_info(cap, last_piece)
