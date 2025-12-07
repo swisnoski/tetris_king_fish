@@ -3,7 +3,6 @@
 import numpy as np
 import sys
 import random
-import threading
 import pygame
 import pygame.freetype
 
@@ -95,6 +94,8 @@ class Tetris:
         self.current_piece = None
         self.piece_x = 0
         self.piece_y = 0
+        self.lines_cleared = 0
+
 
         self.next_pieces = [
             random.choice(PIECE_LIST),
@@ -109,11 +110,7 @@ class Tetris:
 
         self.font = pygame.freetype.Font(None, 30)
 
-        # run our threads (MAY NOT BE NEEDED WITH PYGAME)
-        # loop_thread = threading.Thread(target=self.loop)
-        # key_thread = threading.Thread(target=self.key_listener)
-        # loop_thread.start()
-        # key_thread.start()
+
 
     def spawn_piece(self):
         # create a new piece
@@ -147,6 +144,7 @@ class Tetris:
 
         # then, let's clear them
         for row in tetris_rows:
+            self.lines_cleared += 1
             self.board[3 : row + 1, 1:-1] = self.board[2:row, 1:-1]
             self.board[2, 1:-1] = 0
 
@@ -301,5 +299,5 @@ class Tetris:
             self.check_loss()
 
 
-# my_tetris = Tetris()
-# my_tetris.loop()
+my_tetris = Tetris()
+my_tetris.loop()

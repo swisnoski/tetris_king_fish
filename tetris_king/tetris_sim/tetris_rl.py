@@ -60,12 +60,14 @@ class Tetris_RL(Tetris):
             random.choice(PIECE_LIST),
         ]
 
+
     def initialize(self):
         self.spawn_piece()
         # print(self.current_piece.type)
         valid_moves = find_legal_moves(self.board, self.current_piece.type)
         state = self.state_returner()
         return state, valid_moves
+
 
     def reset(self):
         self.board = np.zeros((self.HEIGHT + 3, self.WIDTH + 2))
@@ -77,18 +79,6 @@ class Tetris_RL(Tetris):
         self.lines_cleared = 0
         self.iteration = 0
 
-    def check_and_clear_tetris(self):
-        # let's find full rows
-        tetris_rows = []
-        for row in range(2, self.HEIGHT + 2):
-            if all(self.board[row][1:-1] == 2):
-                tetris_rows.append(row)
-
-        # then, let's clear them
-        for row in tetris_rows:
-            self.lines_cleared += 1
-            self.board[3 : row + 1, 1:-1] = self.board[2:row, 1:-1]
-            self.board[2, 1:-1] = 0
 
     def step(self, action):
 
@@ -126,9 +116,6 @@ class Tetris_RL(Tetris):
 
     def execute_moves(self, r, t):
 
-        # rotate and move the piece
-        if self.current_piece.type == "I" and r > 1:
-            r = 1
         self.current_piece.rotate(n_rotations=r)
         self.piece_x += t
 
