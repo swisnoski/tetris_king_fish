@@ -64,11 +64,14 @@ def get_cv_info(cap):
     """
     game_state = None
     current_piece = None
-    ret, img = video_to_frame(cap) 
-    if ret: # if got frame correctly, check fill
-        game_state, current_piece = process_image(img)
-    print(game_state, current_piece)
-    return game_state, current_piece
+    if cap:
+        ret, img = video_to_frame(cap) 
+        if ret: # if got frame correctly, check fill
+            game_state, current_piece = process_image(img)
+        print(game_state, current_piece)
+        return game_state, current_piece
+    else:
+        return None, None
 
 def process_image(img):
     """
@@ -79,7 +82,7 @@ def process_image(img):
     grid_img = img.copy()
     grid_pts = initialize_grid(grid_img) 
     if grid_pts is None: # abort and try again
-        return
+        return None, None
     # get game_state matrix
     game_state = game_state_detection.check_fill(img, grid_pts)
     # get current piece
