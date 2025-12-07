@@ -21,6 +21,18 @@ class TetrisArm(Node):
 
     action = {
         "rotate": [
+            19.390781149202574,
+            -65.71144706580844,
+            -106.36085117234512,
+            82.07242236680308,
+            0.0005176930105520582,
+            0,
+        ],
+        "hold": [],
+        "left": [],
+        "right": [],
+        "down": [],
+        "home": [
             19.389899325365683,
             -57.19720086863186,
             -109.90657008199395,
@@ -28,10 +40,6 @@ class TetrisArm(Node):
             6.419371787175759e-05,
             0,
         ],
-        "hold": [],
-        "left": [],
-        "right": [],
-        "down": [],
     }
 
     def __init__(self):
@@ -63,8 +71,7 @@ class TetrisArm(Node):
         # Move arm down and up
         if not self.mc.is_moving():
             self.mc.send_angles(desired_ee, 100)
-            desired_ee[3] = desired_ee[3] + 10
-            self.mc.send_angles(desired_ee, 100)
+            self.mc.send_angles(self.action["home"], 100)
 
         end_time = time.perf_counter()
         self.get_logger().info(f"Elapsed Time: {end_time - start_time}")
