@@ -85,13 +85,9 @@ class TetrisArm(Node):
 
         # Move arm down and up
         if not self.mc.is_moving():
-            self.mc.sync_send_angles(self.action["left"], 100, timeout=0.3)
+            self.mc.sync_send_angles(self.action["right"], 100, timeout=0.3)
             self.mc.sync_send_angles(self.action["home"], 100, timeout=0.3)
-            self.mc.sync_send_angles(self.action["right"], 100, timeout=0.5)
-            self.mc.sync_send_angles(self.action["home"], 100, timeout=0.3)
-            self.mc.sync_send_angles(self.action["left"], 100, timeout=0.3)
-            self.mc.sync_send_angles(self.action["home"], 100, timeout=0.3)
-            self.mc.sync_send_angles(self.action["right"], 100, timeout=0.5)
+            self.mc.sync_send_angles(self.action["right"], 100, timeout=0.3)
             self.mc.sync_send_angles(self.action["home"], 100, timeout=0.3)
 
         end_time = time.perf_counter()
