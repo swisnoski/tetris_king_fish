@@ -19,14 +19,14 @@ WARPED_HEIGHT = 50 * GRID_HEIGHT # 1000 pixels tall
 # TUNE these colors!
 # OpenCV uses BGR
 COLOR_MAP = {
-    "EMPTY": [0, 0, 0],         # Background
-    "I_PIECE": [255, 0, 0],     # Blue
-    "J_PIECE": [255, 255, 0],   # Cyan
+    # "EMPTY": [0, 0, 0],         # Background
+    "I_PIECE": [245, 106, 0],     # Dark
+    "J_PIECE": [240, 60, 0],    # Dark Blue
     "L_PIECE": [85, 96, 226],   # Orange
-    "O_PIECE": [0, 255, 255],   # Yellow
-    "S_PIECE": [0, 255, 0],     # Green
-    "T_PIECE": [128, 0, 128],   # Purple
-    "Z_PIECE": [0, 0, 255],     # Red
+    "O_PIECE": [120, 160, 170],   # Yellow
+    "S_PIECE": [155, 200, 0],     # Green
+    "T_PIECE": [209, 19, 74],   # Purple
+    "Z_PIECE": [61, 17, 202],     # Red
 }
 
 offset_cell_x = 0 # deal with code scoping later
@@ -101,7 +101,8 @@ def check_fill(img, check_grid):
             pixel = img[y, x]
             # print(f'pixel: {pixel}')
             # check that any BGR over threhold --> colored
-            if any(channel > 100 for channel in pixel): # RN: somewhat abritrary threshold
+            if classify_cell_color(pixel):
+            # if any(channel > 100 for channel in pixel): # RN: somewhat abritrary threshold
              # access image at row pixel, col pixel
                 game_state_grid[i][j] = 1
                 # verify visually with a green dot
@@ -156,7 +157,7 @@ def get_current_piece(img, coords_grid, game_state_grid, last_current):
     return current_piece
 
 # Color tolerance (higher=easier match)
-COLOR_TOLERANCE = 50
+COLOR_TOLERANCE = 60
 # Squared for distance check.
 
 def classify_cell_color(bgr_color: np.ndarray) -> str:
@@ -177,10 +178,11 @@ def classify_cell_color(bgr_color: np.ndarray) -> str:
             closest_color_name = name
     
     # Check if distance OK.
-    if closest_color_name != "EMPTY" and min_distance < COLOR_TOLERANCE ** 2:
+    if min_distance < COLOR_TOLERANCE ** 2:
+        print(closest_color_name)
         return closest_color_name
     else:
-        return "EMPTY"
+        return None
         
 def show_close(caption, img):
     """
@@ -195,7 +197,8 @@ def show_close(caption, img):
 
 def main(args=None):
     # CHANGE THIS PATH to the location of your Tetris game screen
-    img_path = "./assets/tetris_screen_cleaned.jpeg" # dummy image path for now
+    # img_path = "./assets/tetris_current_purple.jpeg" # dummy image path for now
+    img_path = "./assets/tetris_screen_cleaned.jpeg"
 
     # Load, run detect once.
     frame_to_process = cv.imread(img_path)
