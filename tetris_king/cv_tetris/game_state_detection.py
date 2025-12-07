@@ -27,7 +27,10 @@ COLOR_MAP = {
     "S": [155, 200, 0],     # Green
     "T": [209, 19, 74],   # Purple
     "Z": [61, 17, 202],     # Red
+    "GRAY": [215, 215, 215]
 }
+
+GRAY_BLOCK = [215, 215, 215] # for the inserted puyo puyo fill blocks
 
 offset_cell_x = 0 # deal with code scoping later
 
@@ -100,25 +103,25 @@ def check_fill(img, check_grid):
             y, x = cell
             pixel = img[y, x]
             # print(f'pixel: {pixel}')
-            # check that any BGR over threhold --> colored
+            # print("check fill")
             if classify_cell_color(pixel):
-            # if any(channel > 100 for channel in pixel): # RN: somewhat abritrary threshold
              # access image at row pixel, col pixel
+                print("filled")
                 game_state_grid[i][j] = 1
                 # verify visually with a green dot
                 cv.circle(img, (x, y), 5, (0, 255, 0), -1) 
-            else: # from not filled pieces, check for ghost piece (current piece's outline)
-                # check both 2 points piece outward off from center (L & R)
-                ghost_offset = offset_cell_x * 0.6 # lol 50 * 0.6 for 30%?
-                left_pixel = img[y, int(x - ghost_offset)]
-                hsv_left = cv.cvtColor(np.uint8([[left_pixel]]), cv.COLOR_BGR2HSV)[0][0]
-                right_pixel = img[y, int(x + ghost_offset)]
-                hsv_right = cv.cvtColor(np.uint8([[right_pixel]]), cv.COLOR_BGR2HSV)[0][0]
-                hue_threshold = 286 / 2 # 286 regular divided by 2 for opencv scale; 145
-                # print(hsv_left[0], hsv_right[0])
-                if hsv_left[0] > hue_threshold and hsv_right[0] > hue_threshold:
-                    game_state_grid[i][j] = 2 # then ghost piece
-                    cv.circle(img, (x, y), 5, (255, 0, 0), -1) # check with bllue overlay
+            # else: # from not filled pieces, check for ghost piece (current piece's outline)
+            #     # check both 2 points piece outward off from center (L & R)
+            #     ghost_offset = offset_cell_x * 0.6 # lol 50 * 0.6 for 30%?
+            #     left_pixel = img[y, int(x - ghost_offset)]
+            #     hsv_left = cv.cvtColor(np.uint8([[left_pixel]]), cv.COLOR_BGR2HSV)[0][0]
+            #     right_pixel = img[y, int(x + ghost_offset)]
+            #     hsv_right = cv.cvtColor(np.uint8([[right_pixel]]), cv.COLOR_BGR2HSV)[0][0]
+            #     hue_threshold = 286 / 2 # 286 regular divided by 2 for opencv scale; 145
+            #     # print(hsv_left[0], hsv_right[0])
+            #     if hsv_left[0] > hue_threshold and hsv_right[0] > hue_threshold:
+            #         game_state_grid[i][j] = 2 # then ghost piece
+            #         cv.circle(img, (x, y), 5, (255, 0, 0), -1) # check with bllue overlay
     
     show_close("Check Fill", img)
 
@@ -224,8 +227,7 @@ def main(args=None):
         game_state_grid = check_fill(game_state_img, check_grid)
         
         # get current piece
-        last_current_piece = None
-        get_current_piece(frame_to_process, check_grid, game_state_grid, last_current_piece)
+        get_current_piece(frame_to_process, check_grid, game_state_grid)
     else:
         print(f"Failed to load image from path: {img_path}. Check file existence and permissions.")
 
