@@ -20,13 +20,13 @@ WARPED_HEIGHT = 50 * GRID_HEIGHT # 1000 pixels tall
 # OpenCV uses BGR
 COLOR_MAP = {
     # "EMPTY": [0, 0, 0],         # Background
-    "I_PIECE": [245, 106, 0],     # Dark
-    "J_PIECE": [240, 60, 0],    # Dark Blue
-    "L_PIECE": [85, 96, 226],   # Orange
-    "O_PIECE": [120, 160, 170],   # Yellow
-    "S_PIECE": [155, 200, 0],     # Green
-    "T_PIECE": [209, 19, 74],   # Purple
-    "Z_PIECE": [61, 17, 202],     # Red
+    "I": [245, 106, 0],     # Dark
+    "J": [240, 60, 0],    # Dark Blue
+    "L": [85, 96, 226],   # Orange
+    "O": [120, 160, 170],   # Yellow
+    "S": [155, 200, 0],     # Green
+    "T": [209, 19, 74],   # Purple
+    "Z": [61, 17, 202],     # Red
 }
 
 offset_cell_x = 0 # deal with code scoping later
