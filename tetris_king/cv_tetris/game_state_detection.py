@@ -121,6 +121,8 @@ def check_fill(img, check_grid):
                     cv.circle(img, (x, y), 5, (255, 0, 0), -1) # check with bllue overlay
     
     show_close("Check Fill", img)
+
+    # implement scrubbing of current piece
     
     # print(output_grid)
     return game_state_grid
@@ -157,7 +159,7 @@ def get_current_piece(img, coords_grid, game_state_grid, last_current):
     return current_piece
 
 # Color tolerance (higher=easier match)
-COLOR_TOLERANCE = 60
+COLOR_TOLERANCE = 65
 # Squared for distance check.
 
 def classify_cell_color(bgr_color: np.ndarray) -> str:
@@ -197,8 +199,8 @@ def show_close(caption, img):
 
 def main(args=None):
     # CHANGE THIS PATH to the location of your Tetris game screen
-    # img_path = "./assets/tetris_current_purple.jpeg" # dummy image path for now
-    img_path = "./assets/tetris_screen_cleaned.jpeg"
+    img_path = "./assets/tetris_current_purple.jpeg" # dummy image path for now
+    # img_path = "./assets/tetris_screen_cleaned.jpeg"
 
     # Load, run detect once.
     frame_to_process = cv.imread(img_path)
@@ -206,8 +208,8 @@ def main(args=None):
         print(f"Successfully loaded image: {img_path}. Running detection...")
         show_close("Show Plain image", frame_to_process)
         # grid_pts = [(420, 250), (1000, 250), (1000, 1400), (420, 1400)] # dummy for start_tetris_cleaned.jpeg
-        grid_pts = [(255, 150), (810, 150), (810, 1290), (255, 1290)] # dummy for tetris_screen_clean.jpeg
-        # grid_pts = [(240, 150), (800, 150), (800, 1280), (255, 1280)] # dummy for tetris_current_purple.jpeg
+        # grid_pts = [(255, 150), (810, 150), (810, 1290), (255, 1290)] # dummy for tetris_screen_clean.jpeg
+        grid_pts = [(240, 150), (800, 150), (800, 1280), (255, 1280)] # dummy for tetris_current_purple.jpeg
         draw_verification_img = cv.imread(img_path) # copy of image for visualization testing
         check_grid = initalize_matrix_fill(draw_verification_img, grid_pts)
         game_state_img = cv.imread(img_path) # copy of image for visualization testing
