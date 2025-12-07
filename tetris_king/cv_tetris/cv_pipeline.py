@@ -50,8 +50,9 @@ def initialize_grid(img):
 
 def get_cv_info():
     """
-    Docstring for get_cv_info
+    Final function called by game super loop that returns game_state matrix and current_piece
     """
+    pass
 
 def main():
     """
@@ -84,8 +85,6 @@ def main():
         except KeyboardInterrupt:
             print("Loop ended")
 
-
-    
     # loop:
     # # read in game state -> send out flag for if different (piece placed)
     # game_state_detection.check_fill()
@@ -95,7 +94,6 @@ def main():
     # current_piece = game_state_detection.get_current_piece()
     # while True:
     #     img = video_to_frame()
-    game_state, img = 
     
 if __name__ == "__main__":
     main()
