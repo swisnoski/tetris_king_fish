@@ -326,6 +326,79 @@ def main():
     for i, label in enumerate(["TL", "TR", "BR", "BL"]):
         print(f"{final_coords[i][0]},{final_coords[i][1]}")
 
+    # final_coords = []
+    output_coords = []
+    for i in range(4):
+        output_coords.append((final_coords[i][0], final_coords[i][1]))
+
+    print(output_coords)
+    return output_coords 
+
+def get_grid_coords(img):
+    # 1. Detection
+    print(type(img))
+    board_rect = detect_board_hough(img)
+
+    use_yolo = True
+
+    if board_rect is not None:
+        board_rect = order_points(board_rect)
+
+    if board_rect is None and use_yolo:
+        board_rect = try_yolo_board_detect(img) 
+        if board_rect is not None:
+            board_rect = order_points(board_rect)
+
+    if board_rect is None:
+        board_rect = detect_board_colormask(img) 
+
+    if board_rect is None:
+        print("Failed to find board by any method.")
+        return
+
+    # 2. Automated and Manual Corrections
+
+    # Change 1: Shrink boundary inward
+    if BOUNDARY_SHRINK_PX > 0:
+        board_rect = adjust_rectangle_inward(board_rect, BOUNDARY_SHRINK_PX)
+    
+    # Change 2: Apply vertical offset
+    if VERTICAL_OFFSET_PX != 0:
+        board_rect[:, 1] += VERTICAL_OFFSET_PX  
+    
+    # Change 3: Expand bottom edge
+    if BOTTOM_EXPAND_PX != 0:
+        board_rect[2, 1] += BOTTOM_EXPAND_PX  
+        board_rect[3, 1] += BOTTOM_EXPAND_PX  
+
+    # Change 4: Specific top drop
+    if TOP_DROP_PX != 0:
+        board_rect[0, 1] += TOP_DROP_PX  
+        board_rect[1, 1] += TOP_DROP_PX  
+    
+    # Change 5: Top horizontal skew correction (Undistortion fix)
+    if TOP_SKEW_X != 0:
+        board_rect[1, 0] += TOP_SKEW_X 
+        
+    # Change 7: Automatic vertical undistortion (Leveling fix)
+    board_rect = normalize_vertical_alignment(board_rect)
+
+    # 3. Output Final Coordinates
+
+    # Convert coordinates to integers for clean output
+    final_coords = board_rect.astype(int)
+
+    # Output only the four corner coordinates in the requested format
+    # for i, label in enumerate(["TL", "TR", "BR", "BL"]):
+    #     print(f"{final_coords[i][0]},{final_coords[i][1]}")
+
+    # final_coords = []
+    output_coords = []
+    for i in range(4):
+        output_coords.append((final_coords[i][0], final_coords[i][1]))
+
+    # print(output_coords)
+    return output_coords 
 
 if __name__ == "__main__":
     main()
