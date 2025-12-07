@@ -72,6 +72,12 @@ class TetrisArm(Node):
         if not self.mc.is_moving():
             self.mc.send_angles(desired_ee, 100)
             self.mc.send_angles(self.action["home"], 100)
+            self.mc.send_angles(desired_ee, 100)
+            self.mc.send_angles(self.action["home"], 100)
+            self.mc.send_angles(desired_ee, 100)
+            self.mc.send_angles(self.action["home"], 100)
+            self.mc.send_angles(desired_ee, 100)
+            self.mc.send_angles(self.action["home"], 100)
 
         end_time = time.perf_counter()
         self.get_logger().info(f"Elapsed Time: {end_time - start_time}")
