@@ -7,8 +7,8 @@ def initialize_video_capture():
     Returns cv VideoCapture object, None is video source failed
     """
      # feed in video 
-    # cap = cv.VideoCapture("./assets/video_test_red.MOV")
-    cap = cv.VideoCapture(0)
+    cap = cv.VideoCapture("./assets/video_test.mp4")
+    # cap = cv.VideoCapture(0)
 
     # check for error:
     if not cap.isOpened():
@@ -27,8 +27,8 @@ def video_to_frame(cap):
     frame: img numpy frame
     """
     # FOR VIDEO TESTING: skipping to go 5 frames at a time:
-    # for _ in range(10):
-    #     cap.grab()   # fast skip
+    for _ in range(10):
+        cap.grab()   # fast skip
 
     # read frame
     ret,frame = cap.read()
@@ -50,11 +50,11 @@ def initialize_grid(img):
     """
     pts = None
     # while pts is None:
-    pts = grid_detection.get_grid_coords(img)
-    if pts is None:
-        return
+    # pts = grid_detection.get_grid_coords(img)
+    # if pts is None:
+    #     return
     print(pts)
-    # pts = [(100, 70),(280, 70),(280, 425),(100, 425)] # DUMMY POINTS FOR GRID VIDEO
+    pts = [(100, 70),(280, 70),(280, 425),(100, 425)] # DUMMY POINTS FOR GRID VIDEO video_test.mp4
     # pts = [(250, 150),(825, 150),(825, 1300),(250, 1300)] # DUMMY POINTS FOR GRID VIDEO
     check_grid = game_state_detection.initalize_matrix_fill(img, pts)
     return check_grid
@@ -80,15 +80,16 @@ def get_cv_info(cap):
     else:
         return None, None
 
-def process_image(img, grid_pts):
+def process_image(img):
     """
     Helper function for all things just needing an img, with game_state and fill detection
     """
     print("Got frame")
     # get grid_pts
+    grid_pts = initialize_grid(img)
     game_state = game_state_detection.check_fill(img, grid_pts)
     # get current piece
-    current_piece = game_state_detection.get_current_piece(img, grid_pts, game_state)
+    current_piece = game_state_detection.get_current_piece(img, game_state)
     # print(current_piece)
     return game_state, current_piece
 
