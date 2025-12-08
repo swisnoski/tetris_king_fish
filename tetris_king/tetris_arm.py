@@ -125,7 +125,7 @@ class TetrisArm(Node):
         start_time = time.perf_counter()
         while time.perf_counter() - start_time < 1.5:
             print(f"Angle plans: {time.perf_counter()}")
-        print(f"Current angle: {self.mc2.get_angles()}")
+        self.mc.stop()
 
     def move(self, instr):
         """
