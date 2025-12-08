@@ -93,9 +93,9 @@ action_size = 44
 gamma = 0.99
 epsilon = 1.0
 epsilon_min = 0.01
-epsilon_decay = 0.9999  # Decay slower because we take more steps per second
+epsilon_decay = 0.9995  # Decay slower because we take more steps per second
 learning_rate = 0.0003  # Lower LR for larger batches
-batch_size = 8192  # Increased batch size for L40S
+batch_size = 2048  # Increased batch size for L40S
 memory_size = 200000
 
 device = torch.device("cuda")
@@ -223,7 +223,7 @@ def main():
     print(f"Training started on {device} with {NUM_ENVS} environments...")
 
     try:
-        while total_steps < 2000000:  # Train for 2M steps (or use infinite loop)
+        while total_steps < 1000000:  # Train for 2M steps (or use infinite loop)
 
             # 1. Get Batch of Actions
             actions = get_actions_batch(obs, epsilon)
@@ -259,10 +259,10 @@ def main():
 
             # 4. Train
             if len(memory) > batch_size * 2:  # Wait for some data
-                replay()
+                gradient_updates = int(NUM_ENVS / 4)  # = 32 updates
 
-                # Optional: Replay multiple times per step if GPU is bored
-                # replay()
+                for _ in range(gradient_updates):
+                    replay()
 
             # 5. Updates
             obs = next_obs
