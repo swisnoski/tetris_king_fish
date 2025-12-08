@@ -98,7 +98,7 @@ class TetrisArm(Node):
             direction = "left"
         elif movement > 0:
             direction = "right"
-
+        """
         # Move arm based on instructions
         if not self.mc.is_moving():
             # Rotate
@@ -109,24 +109,25 @@ class TetrisArm(Node):
             if direction is not None:
                 for _ in range(int(abs(movement))):
                     self.move(direction)
-
+        """
         self.move("drop")
 
     def move_thread(self, instr):
         """
         Thread to move arm
         """
-        self.mc.sync_send_angles(self.action[instr], 70, timeout=0.5)
+        print("thread 1")
+        self.mc2.send_angles(self.action[instr], 70)
+        print("thread 1 finished")
 
     def status_thread(self):
         """
         Thread to check the status of arm
         """
-        time.sleep(1.0)
-        try:
-            self.mc2.send_angles(self.action["home"], 70)
-        except Exception:
-            time.sleep(1.0)
+        time.sleep(0.5)
+        print("thread 2")
+        self.mc2.send_angles(self.action["home"], 70)
+        print("thread 2 finished")
 
     def move(self, instr):
         """
