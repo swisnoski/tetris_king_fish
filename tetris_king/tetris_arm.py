@@ -116,14 +116,14 @@ class TetrisArm(Node):
         """
         Thread to move arm
         """
-        self.mc.send_angles(self.action["rotate"], 50)
+        self.mc.sync_send_angles(self.action["rotate"], 70, timeout=0.5)
 
     def status_thread(self):
         """
         Thread to check the status of arm
         """
         time.sleep(0.8)
-        self.mc2.send_angles(self.action["home"], 50)
+        self.mc2.send_angles(self.action["home"], 70)
 
     def move(self, instr):
         """
