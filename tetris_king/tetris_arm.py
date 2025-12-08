@@ -100,11 +100,11 @@ class TetrisArm(Node):
         if not self.mc.is_moving():
             # Rotate
             if rotations != 0:
-                for _ in range(rotations):
+                for _ in range(int(rotations)):
                     self.move("rotate")
             # Move
             if direction is not None:
-                for _ in range(abs(movement)):
+                for _ in range(int(abs(movement))):
                     self.move(direction)
 
         self.move("drop")
