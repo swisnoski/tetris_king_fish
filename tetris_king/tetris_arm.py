@@ -111,13 +111,21 @@ class TetrisArm(Node):
                     self.move(direction)
         """
         self.move("drop")
+        self.move("drop")
 
     def move_thread(self, instr):
         """
         Thread to move arm
         """
         print("thread 1")
-        self.mc2.send_angles(self.action[instr], 70)
+        processed = False
+        while not processed:
+            try:
+                self.mc.send_angles(self.action[instr], 70)
+            except Exception:
+                pass
+            else:
+                processed = True
         print("thread 1 finished")
 
     def status_thread(self):
@@ -126,7 +134,14 @@ class TetrisArm(Node):
         """
         time.sleep(0.5)
         print("thread 2")
-        self.mc2.send_angles(self.action["home"], 70)
+        processed = False
+        while not processed:
+            try:
+                self.mc2.send_angles(self.action["home"], 70)
+            except Exception:
+                pass
+            else:
+                processed = True
         print("thread 2 finished")
 
     def move(self, instr):
