@@ -122,7 +122,7 @@ class TetrisArm(Node):
         Thread to check the status of arm
         """
         start_time = time.perf_counter()
-        while time.perf_counter() - start_time < 1.0:
+        while time.perf_counter() - start_time < 0.5:
             print(f"Angle plans: {time.perf_counter()}")
         self.mc2.send_angles(self.action["home"], 100)
         self.mc2.clear_queue()
