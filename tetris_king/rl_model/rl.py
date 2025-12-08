@@ -198,14 +198,12 @@ def main():
             lc = 0
             torch.save(
                 policy_net.state_dict(),
-                "~/comprobo25/tetris_king_fish/models/rl_base_chkpt.pt",
+                "models/rl_base_chkpt.pt",
             )
 
         env.reset()
 
-    torch.save(
-        policy_net.state_dict(), "~/comprobo25/tetris_king_fish/models/rl_base.pt"
-    )
+    torch.save(policy_net.state_dict(), "models/rl_base.pt")
 
 
 if __name__ == "__main__":
