@@ -152,6 +152,7 @@ class Tetris_RL(Tetris):
 
     def state_returner(self):
         board = self.board[2:-1, 1:-1]
+        board = board / 2
 
         column_counts = []
         column_counts.extend(PIECE_ENCODING[self.current_piece.type])

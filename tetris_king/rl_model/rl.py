@@ -66,7 +66,6 @@ class DuelingDQN(nn.Module):
         return q_values
 
 
-# env = gym.make("CartPole-v1")
 env = Tetris_RL()
 board_shape = (20, 10)
 state_size = 28
@@ -94,22 +93,6 @@ target_net.eval()
 
 optimizer = optim.Adam(policy_net.parameters(), lr=learning_rate)
 loss_fn = nn.SmoothL1Loss()
-
-
-def process_state(state):
-    """
-    Convert raw state to board and piece_info tensors.
-    Adjust this based on your actual state format.
-    """
-    # Assuming state contains:
-    # - board: 20x10 matrix
-    # - current_piece: piece id (0-6)
-    # - next_pieces: list of upcoming piece ids
-
-    # Example - adjust based on your actual state structure:
-    board = np.array(state["board"])
-    piece_info = state["piece_info"]
-    return board, piece_info
 
 
 # Explore or exploit
