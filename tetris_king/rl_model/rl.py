@@ -153,7 +153,7 @@ def replay():
     optimizer.step()
 
 
-episodes = 15000
+episodes = 100000
 target_update_freq = 1000
 
 
