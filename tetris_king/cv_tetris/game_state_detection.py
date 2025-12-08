@@ -1,38 +1,24 @@
-# 1) get initialized matrix from grid_detection
-# 2) matrix per each grid square, check the color 
-    # will have to account for outline of current block
-# 3) detect current piece and hold pieces
-
 import cv2 as cv 
 import numpy as np
 from typing import Optional, List, Dict, Tuple
+import copy
 
 # --- Grid constants ---
 GRID_WIDTH = 10
 GRID_HEIGHT = 20
-# Output size for warped grid (50px/block)
-WARPED_WIDTH = 50 * GRID_WIDTH   # 500 pixels wide
-WARPED_HEIGHT = 50 * GRID_HEIGHT # 1000 pixels tall
-# Normalize grid view
 
 # Block colors (BGR)
-# TUNE these colors!
-# OpenCV uses BGR
 COLOR_MAP = {
     # "EMPTY": [0, 0, 0],         # Background
-    "I": [245, 106, 0],     # Dark
+    "I": [230, 130, 0],     # light blue
     "J": [240, 60, 0],    # Dark Blue
     "L": [85, 96, 226],   # Orange
     "O": [120, 160, 170],   # Yellow
     "S": [155, 200, 0],     # Green
-    "T": [209, 19, 74],   # Purple
+    "T": [209, 60, 110],   # Purple
     "Z": [61, 17, 202],     # Red
-    "GRAY": [215, 215, 215]
+    "GRAY": [190, 190, 190]
 }
-
-GRAY_BLOCK = [215, 215, 215] # for the inserted puyo puyo fill blocks
-
-offset_cell_x = 0 # deal with code scoping later
 
 def initalize_matrix_fill(img, grid_pts):
     """
@@ -45,16 +31,12 @@ def initalize_matrix_fill(img, grid_pts):
     Returns:
         - check_grid: a 2D array of tuples, representing the coordinate pixel points of the center of each grid cell
     """
-    # ----------
-     # TO CONSIDER --> THIS LOWK JUST NEEDS TO RUN ONCE (JUST GRID?)
     # make grid of pixel coord pts to check screen image [[(x, y)]]
-    # check_grid = None
     check_grid = [[0 for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
     # print(check_grid)
 
-    # use dummy data first -- assume start left pt, clockwise order
-    # test draw circles of points
-    for pt in grid_pts:
+    # start left pt, clockwise order
+    for pt in grid_pts: # test draw circles of points
         cv.circle(img, pt, 5, (255, 255, 255), -1) 
     left_x = grid_pts[0][0]
     right_x = grid_pts[1][0] 
@@ -106,48 +88,90 @@ def check_fill(img, check_grid):
             # print("check fill")
             if classify_cell_color(pixel):
              # access image at row pixel, col pixel
-                print("filled")
+                # print("filled")
                 game_state_grid[i][j] = 1
                 # verify visually with a green dot
                 cv.circle(img, (x, y), 5, (0, 255, 0), -1) 
-            # else: # from not filled pieces, check for ghost piece (current piece's outline)
-            #     # check both 2 points piece outward off from center (L & R)
-            #     ghost_offset = offset_cell_x * 0.6 # lol 50 * 0.6 for 30%?
-            #     left_pixel = img[y, int(x - ghost_offset)]
-            #     hsv_left = cv.cvtColor(np.uint8([[left_pixel]]), cv.COLOR_BGR2HSV)[0][0]
-            #     right_pixel = img[y, int(x + ghost_offset)]
-            #     hsv_right = cv.cvtColor(np.uint8([[right_pixel]]), cv.COLOR_BGR2HSV)[0][0]
-            #     hue_threshold = 286 / 2 # 286 regular divided by 2 for opencv scale; 145
-            #     # print(hsv_left[0], hsv_right[0])
-            #     if hsv_left[0] > hue_threshold and hsv_right[0] > hue_threshold:
-            #         game_state_grid[i][j] = 2 # then ghost piece
-            #         cv.circle(img, (x, y), 5, (255, 0, 0), -1) # check with bllue overlay
     
     show_close("Check Fill", img)
 
+    # print(f"Game grid before scrubbing: {game_state_grid}")
+
     # implement scrubbing of current piece
+    # check for island of pieces that's not connected to the bottom row 
+        # check adjaency through bfs
+    grid = copy.deepcopy(game_state_grid) # copy for checking
+    def bfs(x_og, y_og):
+        """
+        A helper function that runs BFS to find floating island 
+
+        Args:
+            x_og: an int representing the starting x coordinate of island
+            y_og: an int representing the starting y coordinate of island
+        """
+        queue = [(x_og, y_og)]
+        visited = []
+
+        curr_coords = []
+        bottom = False
+
+        while queue:
+            node = queue.pop(0) # tuple of x, y coords (but swapped in actuality to our usual reference)
+
+            if node not in visited:
+                visited.append(node)
+                x, y = node
+                curr_coords.append((x,y)) # append to tentative current piece coordinate list
+                if x == 19:
+                    bottom = True # catch starting block
+                grid[x][y] = 0 # set land to checked (by switching to water)
+
+                # check each of 4 directions + the 4 adjacent cornerss
+                for dx, dy in [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x - 1, y -1), (x - 1, y+1), (x+1, y+1), (x+1, y-1)]:
+                    # check in bounds
+                    if 0 <= dx < len(grid) and 0 <= dy < len(row):
+                        # print(f"coordinate to check: {dy, dx}") # flipped for our usual reference
+                        if grid[dx][dy] == 1: # if floating island
+                            queue.append((dx, dy))
+                            curr_coords.append((dx,dy)) # append to tentative current piece coordinate list
+                            if dx == 19:  # if connected to bottom flag of connected switch on
+                                bottom = True
+        if bottom is False: # if not touching bottom (floating island) --> return
+            return curr_coords
+        else:
+            return None      
     
-    # print(output_grid)
+    # flip matrix entries to 0 if current piece
+    for i, row in enumerate(grid): 
+        for j, cell in enumerate(row):
+            if cell == 1: # if land
+                # print(f'RIGGHT BEFORE BFS: {game_state_grid}')
+                curr_coords = bfs(i, j)
+                # print(f'RIGGHT AFTER BFS: {game_state_grid}')
+                if curr_coords is not None: # if have detected current piece --> SCRUB
+                    print("Detected floating island of current piece!")
+                    # print(f'curr_coords to scrub: {curr_coords}')
+                    for coord in curr_coords:
+                        print(f"coordinate to 0 out: {game_state_grid[coord[0]][coord[1]]}")
+                        x, y = coord[0], coord[1]
+                        # print(f'x is: {x} and y is: {y}')
+                        game_state_grid[x][y] = 0
+                        # TESTING: visually draw to be blue if floating
+                        draw_y, draw_x = check_grid[x][y]
+                        cv.circle(img, (draw_x, draw_y), 5, (255, 0, 0), -1) 
+            else:
+                continue
+
+    show_close("Check Scrub Current Piece", img)
+
+    # print(f"Game state after scrub: {game_state_grid}")
     return game_state_grid
-
-def get_player_pieces():
-    """
-    Returns a list containing current and next pieces
-
-    Returns:
-    - a list in order of current -> next hold pieces
-    """
 
 def get_current_piece(img, coords_grid, game_state_grid):
     """
     Detect and return what the current piece is
     """
-    # consider not recalculating if the piece is the same as the previously detected piece
-    # need some saved dict of pieces here 
-    # should determine this based on the glowing outline at screen bottom
-        # --> accounts for when the current piece may not be on the screen yet 
-        # --> also matches how actual players see the current piece first
-    # mvp clunky heuristic checking top of screen with 2 block gap
+    # heuristic checking top of screen with 2 block gap
     current_piece = None
     for i, row in enumerate(game_state_grid):
         for j, cell in enumerate(row):
@@ -156,22 +180,13 @@ def get_current_piece(img, coords_grid, game_state_grid):
                     pixel = img[coords_grid[i][j]]
                     # print(f'pixel = {pixel}')
                     current_piece = classify_cell_color(pixel)
-                    # print(result)
+                    print(current_piece)
 
     # return current_piece (either None is no detection, or classified)
     return current_piece
-    # if no piece detected, default to last_current
-    # if result is None: 
-    #     current_piece = last_current
-    # elif result != last_current: # if different as last current piece
-    #     current_piece = result # check this logic 
-    # else: # if result is same as last_current
-    #     current_piece = last_current
-    # return current_piece
 
 # Color tolerance (higher=easier match)
 COLOR_TOLERANCE = 65
-# Squared for distance check.
 
 def classify_cell_color(bgr_color: np.ndarray) -> str:
     """Finds closest color in COLOR_MAP."""
@@ -181,7 +196,7 @@ def classify_cell_color(bgr_color: np.ndarray) -> str:
     for name, color in COLOR_MAP.items():
         color_array = np.array(color)
         
-        # Squared distance (B,G,R space).
+        # Squared distance (B,G,R space)
         distance = np.sum((bgr_color.astype(int) - color_array.astype(int)) ** 2)
 
         # print(distance)
@@ -190,9 +205,9 @@ def classify_cell_color(bgr_color: np.ndarray) -> str:
             min_distance = distance
             closest_color_name = name
     
-    # Check if distance OK.
-    if min_distance < COLOR_TOLERANCE ** 2:
-        print(closest_color_name)
+    # Check if distance OK
+    if min_distance < COLOR_TOLERANCE ** 2: # Squared for distance check
+        # print(closest_color_name)
         return closest_color_name
     else:
         return None

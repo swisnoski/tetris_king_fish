@@ -7,7 +7,7 @@ def initialize_video_capture():
     Returns cv VideoCapture object, None is video source failed
     """
      # feed in video 
-    cap = cv.VideoCapture(0)
+    cap = cv.VideoCapture("./assets/video_test.mp4")
 
     # check for error:
     if not cap.isOpened():
@@ -25,6 +25,10 @@ def video_to_frame(cap):
 
     frame: img numpy frame
     """
+    # FOR VIDEO TESTING: skipping to go 5 frames at a time:
+    for _ in range(10):
+        cap.grab()   # fast skip
+
     # read frame
     ret,frame = cap.read()
 
@@ -45,10 +49,12 @@ def initialize_grid(img):
     """
     pts = None
     # while pts is None:
-    pts = grid_detection.get_grid_coords(img)
-    if pts is None:
-        return
+    # pts = grid_detection.get_grid_coords(img)
+    # if pts is None:
+    #     return
     # print(pts)
+    pts = [(100, 70),(280, 70),(280, 425),(100, 425)] # DUMMY POINTS FOR GRID VIDEO
+    # pts = [(250, 150),(825, 150),(825, 1300),(250, 1300)] # DUMMY POINTS FOR GRID VIDEO
     check_grid = game_state_detection.initalize_matrix_fill(img, pts)
     return check_grid
 
@@ -68,7 +74,7 @@ def get_cv_info(cap):
         ret, img = video_to_frame(cap) 
         if ret: # if got frame correctly, check fill
             game_state, current_piece = process_image(img)
-        print(game_state, current_piece)
+        print(f'Final game state and current piece: {game_state, current_piece}')
         return game_state, current_piece
     else:
         return None, None
@@ -109,8 +115,17 @@ def test_video_once():
 
 def test_video_loop():
     cap = initialize_video_capture()
-    while True:
-        game_state, current_piece = get_cv_info(cap)
+    try:
+        while True:
+            game_state, current_piece = get_cv_info(cap)
+
+            # allow KeyboardInterrupt
+            if cv.waitKey(20) == ord('q'):
+                break
+    except KeyboardInterrupt:
+        print("Shutting down")
+    finally:
+        cap.release()
 
 if __name__ == "__main__":
     # test_frame()
