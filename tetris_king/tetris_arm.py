@@ -73,7 +73,6 @@ class TetrisArm(Node):
 
         # Reset arm to location [0, 0, 0, 0, 0, 0]
         self.mc.send_angles(self.action["home"], 30)
-        self.mc.set_fresh_mode(1)
         self.get_logger().info("Reset arm")
 
         # Subscribe to action
@@ -115,31 +114,13 @@ class TetrisArm(Node):
         """
         Thread to move arm
         """
-        self.mc.sync_send_angles(self.action["rotate"], 100, timeout=0.5)
-        self.mc.sync_send_angles(self.action["home"], 100, timeout=0.5)
-
-    def status_thread(self):
-        """
-        Thread to check the status of arm
-        """
-        start_time = time.perf_counter()
-        while time.perf_counter() - start_time < 1.5:
-            print(f"Angle plans: {time.perf_counter()}")
-        self.mc.stop()
-        print("STOP MOVING!")
 
     def move(self, instr):
         """
         Move arm based on instruction
         """
-        thread1 = threading.Thread(target=self.move_thread)
-        thread2 = threading.Thread(target=self.status_thread)
-
-        thread1.start()
-        thread2.start()
-
-        thread1.join()
-        thread2.join()
+        self.mc.send_angles(self.action[instr], 50)
+        self.mc.send_angles(self.action["home"], 50)
 
 
 def main(args=None):
