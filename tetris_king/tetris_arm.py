@@ -69,7 +69,7 @@ class TetrisArm(Node):
         # Connect to mycobot arm
         self.get_logger().info("Connecting to arm...")
         self.mc = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
-        self.mc1 = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
+        self.mc2 = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
         self.get_logger().info("Connected to arm")
 
         # Reset arm to location [0, 0, 0, 0, 0, 0]
@@ -111,13 +111,34 @@ class TetrisArm(Node):
 
         self.move("drop")
 
+    def move_thread(self):
+        """
+        Thread to move arm
+        """
+        self.mc.sync_send_angles(self.action["rotate"], 100, timeout=0.5)
+        self.mc.sync_send_angles(self.action["home"], 100, timeout=0.5)
+
+    def status_thread(self):
+        """
+        Thread to check the status of arm
+        """
+        start_time = time.perf_counter()
+        while time.perf_counter() - start_time < 1.5:
+            print(f"Angle plans: {time.perf_counter()}")
+        print(f"Current angle: {self.mc2.get_angles()}")
+
     def move(self, instr):
         """
         Move arm based on instruction
         """
-        print(self.mc1.get_angles())
-        self.mc.send_angles(self.action[instr], 50)
-        self.mc.send_angles(self.action["home"], 50)
+        thread1 = threading.Thread(target=self.move_thread)
+        thread2 = threading.Thread(target=self.status_thread)
+
+        thread1.start()
+        thread2.start()
+
+        thread1.join()
+        thread2.join()
 
 
 def main(args=None):
