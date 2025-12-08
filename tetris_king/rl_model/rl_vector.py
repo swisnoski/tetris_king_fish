@@ -1,5 +1,3 @@
-import sys
-from pathlib import Path
 import random
 import numpy as np
 from collections import deque
@@ -8,10 +6,8 @@ import torch.nn as nn
 import torch.optim as optim
 import gymnasium as gym
 from gymnasium.vector import AsyncVectorEnv
-
-# --- IMPORT YOUR CUSTOM ENV ---
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from tetris_king.tetris_sim.tetris_rl import Tetris_RL
+import time
 
 
 # --- 1. THE GYM WRAPPER ---
@@ -97,7 +93,7 @@ action_size = 44
 gamma = 0.99
 epsilon = 1.0
 epsilon_min = 0.01
-epsilon_decay = 0.9999  # Decay slower because we take more steps per second
+epsilon_decay = 0.999998  # Decay slower because we take more steps per second
 learning_rate = 0.0003  # Lower LR for larger batches
 batch_size = 4096  # Increased batch size for L40S
 memory_size = 200000
@@ -278,13 +274,14 @@ def main():
             if total_steps % target_update_freq < NUM_ENVS:
                 target_net.load_state_dict(policy_net.state_dict())
                 print(f"Steps: {total_steps}, Epsilon: {epsilon:.4f}")
-                torch.save(policy_net.state_dict(), "model_checkpoint.pt")
+                torch.save(policy_net.state_dict(), "models/model_checkpoint.pt")
 
     except KeyboardInterrupt:
         print("Stopping...")
     finally:
         vec_env.close()
-        torch.save(policy_net.state_dict(), "model_final.pt")
+        timestr = time.strftime("%m%d-%H%M")
+        torch.save(policy_net.state_dict(), f"models/model_final_{timestr}.pt")
 
 
 if __name__ == "__main__":
