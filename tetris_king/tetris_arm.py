@@ -126,7 +126,6 @@ class TetrisArm(Node):
         while time.perf_counter() - start_time < 0.5:
             print(f"Angle plans: {time.perf_counter()}")
         self.mc2.sync_send_angles(self.action["home"], 100, timeout=0.5)
-        self.mc2.clear_queue()
 
     def move(self, instr):
         """
