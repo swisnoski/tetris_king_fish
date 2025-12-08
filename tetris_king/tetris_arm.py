@@ -115,8 +115,7 @@ class TetrisArm(Node):
         """
         Thread to move arm
         """
-        self.mc.clear_queue()
-        self.mc.sync_send_angles(self.action["rotate"], 100, timeout=0.5)
+        self.mc.send_angles(self.action["rotate"], 100)
 
     def status_thread(self):
         """
@@ -125,7 +124,8 @@ class TetrisArm(Node):
         start_time = time.perf_counter()
         while time.perf_counter() - start_time < 1.0:
             print(f"Angle plans: {time.perf_counter()}")
-        self.mc2.sync_send_angles(self.action["home"], 100, timeout=0.5)
+        self.mc2.send_angles(self.action["home"], 100)
+        self.mc2.clear_queue()
 
     def move(self, instr):
         """
