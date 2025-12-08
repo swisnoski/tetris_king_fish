@@ -15,57 +15,40 @@ class DuelingDQN(nn.Module):
     def __init__(self, board_shape, piece_info_size, action_size):
         super(DuelingDQN, self).__init__()
 
-        self.board_height, self.board_width = board_shape
-
-        # CNN for board - NO pooling, preserve spatial information
+        # 1. THE CNN
+        # Input: 1 x 20 x 10
         self.conv = nn.Sequential(
-            nn.Conv2d(1, 64, kernel_size=3, padding=1),  # 64 x 20 x 10
-            nn.ReLU(),
-            nn.Conv2d(64, 128, kernel_size=3, padding=1),  # 128 x 20 x 10
-            nn.ReLU(),
-            nn.Conv2d(128, 128, kernel_size=3, padding=1),  # 128 x 20 x 10
-            nn.ReLU(),
-            nn.Conv2d(
-                128, 64, kernel_size=1
-            ),  # 64 x 20 x 10 (1x1 conv to reduce channels)
-            nn.ReLU(),
-            nn.Flatten(),  # 64 * 20 * 10 = 12800
+            nn.Conv2d(1, 32, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            # I removed the 3rd layer to save parameters. 2 layers is enough for Tetris.
+            # But I kept the 1x1 idea to squeeze channels.
+            nn.Conv2d(64, 32, kernel_size=1),  # Squeeze to 32 channels
+            nn.ReLU(inplace=True),
+            nn.Flatten(),
         )
 
-        self.cnn_output_size = 64 * 20 * 10  # 12800
+        # Math: 32 channels * 20 * 10 = 6,400 features.
+        # (Much more manageable than 12,800)
+        self.cnn_output_size = 6400
 
-        # Piece encoder
+        # 2. YOUR PIECE ENCODER (Keep it simple)
         self.piece_encoder = nn.Sequential(
-            nn.Linear(piece_info_size, 128),
-            nn.ReLU(),
-            nn.Linear(128, 128),
-            nn.ReLU(),
+            nn.Linear(piece_info_size, 32), nn.ReLU(inplace=True)
         )
 
-        # Combined size
-        combined_size = self.cnn_output_size + 128
-
-        # Shared layers
+        # 3. SHARED LAYER (No Dropout, Smaller Size)
+        combined_size = self.cnn_output_size + 32
         self.shared = nn.Sequential(
-            nn.Linear(combined_size, 1024),
-            nn.ReLU(),
-            nn.Linear(1024, 512),
-            nn.ReLU(),
+            nn.Linear(combined_size, 512),  # Reduced from 1024
+            nn.ReLU(inplace=True),
+            # NO DROPOUT
         )
 
-        # Value stream
-        self.value_stream = nn.Sequential(
-            nn.Linear(512, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1),
-        )
-
-        # Advantage stream
-        self.advantage_stream = nn.Sequential(
-            nn.Linear(512, 256),
-            nn.ReLU(),
-            nn.Linear(256, action_size),
-        )
+        # 4. DUELING HEADS (Same as before)
+        self.value_stream = nn.Linear(512, 1)
+        self.advantage_stream = nn.Linear(512, action_size)
 
     def forward(self, board, piece_info):
         board = board.unsqueeze(1)  # Add channel dim
@@ -187,7 +170,7 @@ def replay():
     optimizer.step()
 
 
-episodes = 650000
+episodes = 15000
 target_update_freq = 1000
 
 
