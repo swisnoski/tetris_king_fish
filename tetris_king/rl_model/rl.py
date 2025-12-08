@@ -196,10 +196,16 @@ def main():
                 f"Episode {episode}, Total Reward: {total_reward}, Epsilon: {epsilon:.3f}, LC: {lc}"
             )
             lc = 0
+            torch.save(
+                policy_net.state_dict(),
+                "~/comprobo25/tetris_king_fish/models/rl_base_chkpt.pt",
+            )
 
         env.reset()
 
-    torch.save(policy_net.state_dict(), "model.pt")
+    torch.save(
+        policy_net.state_dict(), "~/comprobo25/tetris_king_fish/models/rl_base.pt"
+    )
 
 
 if __name__ == "__main__":
