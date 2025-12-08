@@ -92,7 +92,7 @@ action_size = 44
 # Hyperparameters
 gamma = 0.99
 epsilon_min = 0.01
-epsilon_decay = 0.9999
+epsilon_decay = 0.999
 learning_rate = 0.0005
 batch_size = 128
 memory_size = 100000
@@ -187,8 +187,8 @@ def replay():
     optimizer.step()
 
 
-episodes = 15000
-target_update_freq = 500
+episodes = 650000
+target_update_freq = 1000
 
 
 def main():
