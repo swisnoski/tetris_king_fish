@@ -114,10 +114,10 @@ class TetrisArm(Node):
         Move arm based on instruction
         """
         start_time = time.perf_counter()
-        self.mc.sync_send_angles(self.action[instr], 100, timeout=0.3)
+        self.mc.send_angles(self.action[instr], 100)
         end_time = time.perf_counter()
         print(f"one movement: {end_time - start_time}")
-        self.mc.sync_send_angles(self.action["home"], 100, timeout=0.3)
+        self.mc.send_angles(self.action["home"], 100)
 
 
 def main(args=None):
