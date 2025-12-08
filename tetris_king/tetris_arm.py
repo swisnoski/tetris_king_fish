@@ -92,7 +92,7 @@ class TetrisArm(Node):
         rotations = data[0]
         movement = data[1]
 
-        # Decide whether movement is left or right
+        """# Decide whether movement is left or right
         direction = None
         if movement < 0:
             direction = "left"
@@ -108,7 +108,7 @@ class TetrisArm(Node):
             # Move
             if direction is not None:
                 for _ in range(int(abs(movement))):
-                    self.move(direction)
+                    self.move(direction)"""
 
         self.move("drop")
 
