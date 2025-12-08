@@ -115,6 +115,7 @@ class TetrisArm(Node):
         """
         Thread to move arm
         """
+        self.mc.clear_queue()
         self.mc.sync_send_angles(self.action["rotate"], 100, timeout=0.5)
 
     def status_thread(self):
