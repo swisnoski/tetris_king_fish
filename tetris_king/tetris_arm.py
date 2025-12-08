@@ -136,8 +136,8 @@ class TetrisArm(Node):
         thread1.start()
         thread2.start()
 
-        thread1.join()
         thread2.join()
+        thread1.join()
         print("Threads join")
 
 
