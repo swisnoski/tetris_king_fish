@@ -93,9 +93,9 @@ action_size = 44
 gamma = 0.99
 epsilon = 1.0
 epsilon_min = 0.01
-epsilon_decay = 0.999998  # Decay slower because we take more steps per second
+epsilon_decay = 0.9999  # Decay slower because we take more steps per second
 learning_rate = 0.0003  # Lower LR for larger batches
-batch_size = 4096  # Increased batch size for L40S
+batch_size = 8192  # Increased batch size for L40S
 memory_size = 200000
 
 device = torch.device("cuda")
