@@ -123,7 +123,10 @@ class TetrisArm(Node):
         Thread to check the status of arm
         """
         time.sleep(1.0)
-        self.mc2.send_angles(self.action["home"], 70)
+        try:
+            self.mc2.send_angles(self.action["home"], 70)
+        except Exception:
+            time.sleep(1.0)
 
     def move(self, instr):
         """
