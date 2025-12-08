@@ -130,7 +130,7 @@ class TetrisArm(Node):
         """
         Move arm based on instruction
         """
-        thread1 = threading.Thread(target=self.move_thread, args=(instr))
+        thread1 = threading.Thread(target=self.move_thread, args=(instr,))
         thread2 = threading.Thread(target=self.status_thread)
 
         thread1.start()
