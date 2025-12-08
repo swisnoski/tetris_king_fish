@@ -117,10 +117,14 @@ class TetrisArm(Node):
         Thread to move arm
         """
         print("thread 1")
-        try:
-            self.mc.send_angles(self.action[instr], 70)
-        except:
-            print("Error 1")
+        processed = False
+        while not processed:
+            try:
+                self.mc2.send_angles(self.action[instr], 70)
+            except Exception:
+                pass
+            else:
+                processed = True
         print("thread 1 finished")
 
     def status_thread(self):
