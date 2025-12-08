@@ -139,6 +139,7 @@ class TetrisArm(Node):
 
         thread1.join()
         thread2.join()
+        time.sleep(0.5)
 
 
 def main(args=None):
