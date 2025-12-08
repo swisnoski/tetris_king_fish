@@ -74,7 +74,7 @@ action_size = 44
 # Hyperparameters
 gamma = 0.99
 epsilon_min = 0.01
-epsilon_decay = 0.999
+epsilon_decay = 0.9995
 learning_rate = 0.0005
 batch_size = 128
 memory_size = 100000
