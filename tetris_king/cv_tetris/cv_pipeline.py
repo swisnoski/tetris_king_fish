@@ -8,6 +8,7 @@ def initialize_video_capture():
     """
      # feed in video 
     cap = cv.VideoCapture("./assets/video_test.mp4")
+    # cap = cv.VideoCapture(0)
 
     # check for error:
     if not cap.isOpened():
@@ -52,8 +53,8 @@ def initialize_grid(img):
     # pts = grid_detection.get_grid_coords(img)
     # if pts is None:
     #     return
-    # print(pts)
-    pts = [(100, 70),(280, 70),(280, 425),(100, 425)] # DUMMY POINTS FOR GRID VIDEO
+    print(pts)
+    pts = [(100, 70),(280, 70),(280, 425),(100, 425)] # DUMMY POINTS FOR GRID VIDEO video_test.mp4
     # pts = [(250, 150),(825, 150),(825, 1300),(250, 1300)] # DUMMY POINTS FOR GRID VIDEO
     check_grid = game_state_detection.initalize_matrix_fill(img, pts)
     return check_grid
@@ -85,14 +86,10 @@ def process_image(img):
     """
     print("Got frame")
     # get grid_pts
-    grid_img = img.copy()
-    grid_pts = initialize_grid(grid_img) 
-    if grid_pts is None: # abort and try again
-        return None, None
-    # get game_state matrix
+    grid_pts = initialize_grid(img)
     game_state = game_state_detection.check_fill(img, grid_pts)
     # get current piece
-    current_piece = game_state_detection.get_current_piece(img, grid_pts, game_state)
+    current_piece = game_state_detection.get_current_piece(img, game_state)
     # print(current_piece)
     return game_state, current_piece
 
@@ -100,7 +97,7 @@ def test_frame():
     """
     Mock game system pipeline with image path, abstracting away model + arm.
     """
-    img_path = "./assets/start_tetris_cleaned.jpg" # test image path
+    img_path = "./assets/start_tetris_red.png" # test image path
 
     img = cv.imread(img_path)
 
