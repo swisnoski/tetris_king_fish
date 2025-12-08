@@ -90,7 +90,7 @@ class DuelingDQN(nn.Module):
 
 
 # --- HYPERPARAMETERS ---
-NUM_ENVS = 32  # Parallel environments (adjust based on CPU cores)
+NUM_ENVS = 128  # Parallel environments (adjust based on CPU cores)
 board_shape = (20, 10)
 state_size = 28
 action_size = 44
@@ -99,7 +99,7 @@ epsilon = 1.0
 epsilon_min = 0.01
 epsilon_decay = 0.9999  # Decay slower because we take more steps per second
 learning_rate = 0.0003  # Lower LR for larger batches
-batch_size = 1024  # Increased batch size for L40S
+batch_size = 4096  # Increased batch size for L40S
 memory_size = 200000
 
 device = torch.device("cuda")
