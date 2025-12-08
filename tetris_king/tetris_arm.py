@@ -69,7 +69,7 @@ class TetrisArm(Node):
         # Connect to mycobot arm
         self.get_logger().info("Connecting to arm...")
         self.mc = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
-        self.mc.set_free_mode(1)
+        self.mc.set_fresh_mode(1)
         self.mc2 = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
         self.get_logger().info("Connected to arm")
 
