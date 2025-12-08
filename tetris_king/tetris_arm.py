@@ -69,7 +69,7 @@ class TetrisArm(Node):
         # Connect to mycobot arm
         self.get_logger().info("Connecting to arm...")
         self.mc = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
-        self.mc.set_fresh_mode(1)
+        self.mc.set_fresh_mode(0)
         self.mc2 = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
         self.get_logger().info("Connected to arm")
 
@@ -92,7 +92,7 @@ class TetrisArm(Node):
         rotations = data[0]
         movement = data[1]
 
-        """# Decide whether movement is left or right
+        # Decide whether movement is left or right
         direction = None
         if movement < 0:
             direction = "left"
@@ -108,15 +108,15 @@ class TetrisArm(Node):
             # Move
             if direction is not None:
                 for _ in range(int(abs(movement))):
-                    self.move(direction)"""
+                    self.move(direction)
 
         self.move("drop")
 
-    def move_thread(self):
+    def move_thread(self, instr):
         """
         Thread to move arm
         """
-        self.mc.sync_send_angles(self.action["rotate"], 70, timeout=0.5)
+        self.mc.sync_send_angles(self.action[instr], 70, timeout=0.5)
 
     def status_thread(self):
         """
@@ -124,12 +124,13 @@ class TetrisArm(Node):
         """
         time.sleep(0.8)
         self.mc2.send_angles(self.action["home"], 70)
+        self.mc2.stop()
 
     def move(self, instr):
         """
         Move arm based on instruction
         """
-        thread1 = threading.Thread(target=self.move_thread)
+        thread1 = threading.Thread(target=self.move_thread, args=(instr))
         thread2 = threading.Thread(target=self.status_thread)
 
         thread1.start()
