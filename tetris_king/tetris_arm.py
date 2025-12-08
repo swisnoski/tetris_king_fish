@@ -13,6 +13,8 @@ import time
 from tetris_king.modules.ik import inverse_kinematics
 import tetris_king.modules.util as util
 
+import threading
+
 
 class TetrisArm(Node):
     """
@@ -109,15 +111,33 @@ class TetrisArm(Node):
 
         self.move("drop")
 
+    def move_thread(self):
+        """
+        Thread to move arm
+        """
+        self.mc.send_angles(self.action["rotate"], 100)
+        self.mc.send_angles(self.action["home"], 100)
+
+    def status_thread(self):
+        """
+        Thread to check the status of arm
+        """
+        start_time = time.perf_counter()
+        while time.perf_counter() - start_time < 5.0:
+            print(f"Angle plans: {self.mc.get_angles_plan()}")
+
     def move(self, instr):
         """
         Move arm based on instruction
         """
-        start_time = time.perf_counter()
-        self.mc.send_angles(self.action[instr], 100)
-        end_time = time.perf_counter()
-        print(f"one movement: {end_time - start_time}")
-        self.mc.send_angles(self.action["home"], 100)
+        thread1 = threading.Thread(target=self.move_thread)
+        thread2 = threading.Thread(target=self.status_thread)
+
+        thread1.start()
+        thread2.start()
+
+        thread1.join()
+        thread2.join()
 
 
 def main(args=None):
