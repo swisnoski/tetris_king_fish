@@ -125,7 +125,7 @@ class TetrisArm(Node):
         start_time = time.perf_counter()
         while time.perf_counter() - start_time < 0.8:
             print(f"Angle plans: {time.perf_counter()}")
-        self.mc2.send_angles(self.action["home"], 100)
+        self.mc2.sync_send_angles(self.action["home"], 100, timeout=0.5)
 
     def move(self, instr):
         """
@@ -139,8 +139,7 @@ class TetrisArm(Node):
 
         thread1.join()
         thread2.join()
-        time.sleep(0.5)
-        self.mc2.clear_queue()
+        print("Threads join")
 
 
 def main(args=None):
