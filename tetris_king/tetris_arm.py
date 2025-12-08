@@ -123,7 +123,7 @@ class TetrisArm(Node):
             try:
                 self.mc.send_angles(self.action[instr], 70)
             except Exception:
-                pass
+                processed = True
             else:
                 processed = True
         print("thread 1 finished")
@@ -132,7 +132,7 @@ class TetrisArm(Node):
         """
         Thread to check the status of arm
         """
-        time.sleep(0.5)
+        time.sleep(0.1)
         print("thread 2")
         processed = False
         while not processed:
@@ -148,6 +148,7 @@ class TetrisArm(Node):
         """
         Move arm based on instruction
         """
+        start = time.perf_counter()
         thread1 = threading.Thread(target=self.move_thread, args=(instr,))
         thread2 = threading.Thread(target=self.status_thread)
 
@@ -157,6 +158,7 @@ class TetrisArm(Node):
         thread2.join()
         thread1.join()
         print(f"Threads join: {instr}")
+        print(f"Time: {time.perf_counter() - start}")
 
 
 def main(args=None):
