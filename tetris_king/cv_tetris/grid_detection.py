@@ -336,7 +336,7 @@ def main():
 
 def get_grid_coords(img):
     # 1. Detection
-    print(type(img))
+    # print(type(img))
     board_rect = detect_board_hough(img)
 
     use_yolo = True
