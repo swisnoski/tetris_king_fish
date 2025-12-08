@@ -68,7 +68,7 @@ class TetrisArm(Node):
         super().__init__("tetris_arm")
         # Connect to mycobot arm
         self.get_logger().info("Connecting to arm...")
-        self.mc = MyCobot280("/dev/ttyAMA0", 1000000)
+        self.mc = MyCobot280("/dev/ttyAMA0")
         self.get_logger().info("Connected to arm")
 
         # Reset arm to location [0, 0, 0, 0, 0, 0]
@@ -115,8 +115,8 @@ class TetrisArm(Node):
         """
         Thread to move arm
         """
-        self.mc.send_angles(self.action["rotate"], 100)
-        self.mc.send_angles(self.action["home"], 100)
+        self.mc.sync_send_angles(self.action["rotate"], 100, timeout=0.5)
+        self.mc.sync_send_angles(self.action["home"], 100, timeout=0.5)
 
     def status_thread(self):
         """
