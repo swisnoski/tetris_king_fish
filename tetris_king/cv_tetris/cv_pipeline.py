@@ -69,12 +69,25 @@ def get_cv_info(cap):
     Returns:
     - tuple of game_state, current_piece
     """
+    corner_pts = None
+    grid_pts = None
     game_state = None
     current_piece = None
     if cap:
         ret, img = video_to_frame(cap) 
-        if ret: # if got frame correctly, check fill
-            game_state, current_piece = process_image(img)
+        while corner_pts is None:
+            if ret: # if got frame correctly, check fill
+                print("Got frame")
+                # get grid_pts
+                corner_pts = grid_detection.get_grid_coords(img)
+            if corner_pts is None:
+                ret, img = video_to_frame(cap) 
+        print(f'Corner points: {corner_pts}')
+        grid_pts = game_state_detection.initalize_matrix_fill(img, corner_pts)
+        game_state = game_state_detection.check_fill(img, grid_pts)
+        # get current piece
+        current_piece = game_state_detection.get_current_piece(img, grid_pts, game_state)
+        # print(current_piece)
         print(f'Final game state and current piece: {game_state, current_piece}')
         return game_state, current_piece
     else:
@@ -89,7 +102,7 @@ def process_image(img):
     grid_pts = initialize_grid(img)
     game_state = game_state_detection.check_fill(img, grid_pts)
     # get current piece
-    current_piece = game_state_detection.get_current_piece(img, game_state)
+    current_piece = game_state_detection.get_current_piece(img, grid_pts, game_state)
     # print(current_piece)
     return game_state, current_piece
 
