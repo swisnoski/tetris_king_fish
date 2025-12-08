@@ -115,7 +115,7 @@ class TetrisArm(Node):
         """
         Move arm based on instruction
         """
-        self.mc1.get_angles()
+        print(self.mc1.get_angles())
         self.mc.send_angles(self.action[instr], 50)
         self.mc.send_angles(self.action["home"], 50)
 
