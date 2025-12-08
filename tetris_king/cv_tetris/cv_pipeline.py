@@ -7,7 +7,8 @@ def initialize_video_capture():
     Returns cv VideoCapture object, None is video source failed
     """
      # feed in video 
-    cap = cv.VideoCapture("./assets/video_test.mp4")
+    # cap = cv.VideoCapture("./assets/video_test_red.MOV")
+    cap = cv.VideoCapture(0)
 
     # check for error:
     if not cap.isOpened():
@@ -26,8 +27,8 @@ def video_to_frame(cap):
     frame: img numpy frame
     """
     # FOR VIDEO TESTING: skipping to go 5 frames at a time:
-    for _ in range(10):
-        cap.grab()   # fast skip
+    # for _ in range(10):
+    #     cap.grab()   # fast skip
 
     # read frame
     ret,frame = cap.read()
@@ -49,11 +50,11 @@ def initialize_grid(img):
     """
     pts = None
     # while pts is None:
-    # pts = grid_detection.get_grid_coords(img)
-    # if pts is None:
-    #     return
-    # print(pts)
-    pts = [(100, 70),(280, 70),(280, 425),(100, 425)] # DUMMY POINTS FOR GRID VIDEO
+    pts = grid_detection.get_grid_coords(img)
+    if pts is None:
+        return
+    print(pts)
+    # pts = [(100, 70),(280, 70),(280, 425),(100, 425)] # DUMMY POINTS FOR GRID VIDEO
     # pts = [(250, 150),(825, 150),(825, 1300),(250, 1300)] # DUMMY POINTS FOR GRID VIDEO
     check_grid = game_state_detection.initalize_matrix_fill(img, pts)
     return check_grid
@@ -79,17 +80,12 @@ def get_cv_info(cap):
     else:
         return None, None
 
-def process_image(img):
+def process_image(img, grid_pts):
     """
     Helper function for all things just needing an img, with game_state and fill detection
     """
     print("Got frame")
     # get grid_pts
-    grid_img = img.copy()
-    grid_pts = initialize_grid(grid_img) 
-    if grid_pts is None: # abort and try again
-        return None, None
-    # get game_state matrix
     game_state = game_state_detection.check_fill(img, grid_pts)
     # get current piece
     current_piece = game_state_detection.get_current_piece(img, grid_pts, game_state)
@@ -100,7 +96,7 @@ def test_frame():
     """
     Mock game system pipeline with image path, abstracting away model + arm.
     """
-    img_path = "./assets/start_tetris_cleaned.jpg" # test image path
+    img_path = "./assets/start_tetris_red.png" # test image path
 
     img = cv.imread(img_path)
 
