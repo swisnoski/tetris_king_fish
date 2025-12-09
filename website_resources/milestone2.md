@@ -70,6 +70,4 @@ Demo video: https://youtube.com/shorts/2U45naUxKbg
 
 **5. Testing, Integration, & Other:** 
 
-
-## Milestone 3 Goals
-
+We are very close to being fully integrated. Each component has a functional MVP, however, while we have a pipeline written, more issues are getting discovered as we try to integrate the parts together, such as the format for passing information, the uncontrolled environment that caused unforeseen challenges to the CV algorithm, among other things. Being fully integrated is top on our priority list, and we believe we are close.
