@@ -1,17 +1,16 @@
 # Milestone 2 Progress Update
 
-
-
-## Component Progress 
-
-**1. Computer Vision:**
+## 1. Computer Vision:
 
 By this milestone, the goal for computer vision was to be able to essentially process what's going on in Tetris, which translates to being able to read in live camera frames and output information about the game state (how many game cells are filled + what the current piece is). Overall, we were able to accomplish this goal! We worked up from smaller tasks, testing with sample still images and then videos, and, at this point, we are refining our outputs in our actual real-time playing environment.
 
 One major design decision we made from last milestone was to cut out the first step of screen detection, in order to reduce unneeded complexity with our image input. Instead, we position our webcam to largely only take in the player area we want to control, such as in Figure 1.
 
-![Input Frame for CV](../tetris_king/cv_tetris/assets/tetris_screen_final.png)
-Figure 1: Input Frame for CV
+<p align="center">
+  <img src="../tetris_king/cv_tetris/assets/tetris_screen_final.png" alt="Input Frame for CV" width="40%">
+  <br>
+  <em>Figure 1: Input Frame for CV</em>
+</p>
 
 With this decision in mind, we were able to make significant progress, accomplishing the following tasks for our computer vision pipeline to run in sequence:
 - Grid detection (*grid_detection.py*)
@@ -22,27 +21,35 @@ Our grid detection takes in a frame of the camera feed, and detects the gameplay
 
 These four coordinate points are then used by the fill detection in order to calculate the center of each grid cell for later color mapping. We calculate the width and height of the gameplay grid using the detected four coordinate points, using the known dimensions of the gameplay grid in cells (10 by 20 cells always) to divide the width and height in cells counts, and applying an offset of half the length in each direction to find the center of the grid. 
 
-![Detected Grid](./grid_initialization.png)
-Figure 2: Our detected grid corner points with center cell points
+<p align="center">
+  <img src="./grid_initialization.png" alt="Detected Grid" width="20%">
+  <br>
+  <em>Figure 2: Our detected grid corner points with center cell points</em>
+</p>
 
 From these center coordinates, we determinate by using a HSV color map for each tetris piece to check whether a cell is filled, by checking the HSV pixel for being within distance of a certain threshold of any HSV value of a tetris piece. If the cell center pixel passes this threshold, we consider it "filled", and otherwise empty. These get recorded in an output of a 2D array representing the game grid in 0 and 1s. If a cell is 0, then it is empty, and if it is 1, then the cell is detected as filled. 
 
-![CV Detected Filled Cells](./cv_check_fill.png)
-Figure 3: Filled cells detected in green dots
+<p align="center">
+  <img src="./cv_check_fill.png" alt="CV Detected Filled Cells" width="20%">
+  <br>
+  <em>Figure 3: Filled cells detected in green dots</em>
+</p>
 
 Since we don't want our current falling piece to be considered as part of the "filled" section of the game state, we also exclude the current piece from this fill detection by using a breadth-first search algorithm to determine whether there is an "island" of detected filled pieces that isn't connected to the bottom of the grid, and excluding it. Figure 4 shows the detected pieces to scrub from its consideration of a "filled" game state:
 
-![CV Scrub Piece](./scrub_piece.png)
-
-Figure 4: The detected pieces dotted in blue to scrub from its consideration of a "filled" game state
+<p align="center">
+  <img src="./scrub_piece.png" alt="CV Scrub Piece" width="20%">
+  <br>
+  <em>Figure 4: The detected pieces dotted in blue to scrub from its consideration of a "filled" game state</em>
+</p>
 
 The current piece detection is accomplished by checking the upper two rows of the gameplay board for a piece using a similar color detection to the fill detection, as we know a piece always spawns in the same place.
 
 To integrate smoothly with the other components of the project, we wrapped these processes into two functions that the overall pipeline for the project uses, from *cv_pipeline.py*: 
-- initialize_video_capture() 
-- get_cv_info()
+- `initialize_video_capture() `
+- `get_cv_info()`
 
-The function initialize_video_capture() initializes the webcam video capture using OpenCV's built in VideoCapture() function, and runs once at our program start. From there, get_cv_info() is called at the beginning of every program loop, in order update the game state and current piece.
+The function `initialize_video_capture()` initializes the webcam video capture using OpenCV's built in `VideoCapture()` function, and runs once at our program start. From there, `get_cv_info()` is called at the beginning of every program loop, in order update the game state and current piece.
 
 While we have made a lot of progress, we have some remaining tuning and testing to do in order to make our computer vision more reliable and efficient. Most of this centers around the imperfect playing environment that we've begun to discover with more testing, with a webcam that initializes on some computeres to a black screen, slight grid warping from an imperfect camera placement, and heavy saturation from our webcam looking at a TV screen.
 
@@ -52,7 +59,7 @@ Goals for end of project:
 - fine tune current piece detection for advanced cases of gameplay (when the filled pieces reach the top)
 - consider processing optimizations with initializing grid only once, and potential C++ implementation
 
-**2. Tetris Emulator:**
+## 2. Tetris Emulator:
 
 
 Our tetris emulator works! At this point, we’ve created three different versions of our tetris class: a playable emulator, which was mainly for debugging the original game, a model that uses our custom heuristic as a basic standard, and a model that interfaces as an RL training environment with a custom step function. 
@@ -77,7 +84,7 @@ Largely, the work for this section is completed. While there is slightly more wo
 
 
 
-**3. Reinforcement Learning:**
+## 3. Reinforcement Learning:
 
 We've proven the concept for RL! Through the support of MGHPCC, we've successfully trained an RL model that is capable of learning *something*. Specifically, for an agent that places the blocks randomly, the average score per 100 games is close to 0. With our model, we were able to achieve a total of ~200 lines cleared per 100 games, a non insignificant improvement compared to random reference samples. 
 
@@ -97,7 +104,7 @@ For the upcoming week, we will be focused on improving the performance of the mo
 - Potentially doing changes to the network architecture, albeit unlikely
 
 
-**4. Robotic Arm Controls:** 
+## 4. Robotic Arm Controls:
 
 For this milestone, the objective is to optimize the arm speed to enable for realtime interfacing with a physical switch controller. Before the milestone, the average time for the arm to press a button and move back to the "home" position was 3s. Now, that time has decreased to 1.5s. We are still looking to decrease it even further if possible.
 
@@ -113,6 +120,6 @@ Goals til end of project:
 Demo video: https://youtube.com/shorts/2U45naUxKbg
 
 
-**5. Testing, Integration, & Other:** 
+## 5. Testing, Integration, & Other:
 
 We are very close to being fully integrated. Each component has a functional MVP, however, while we have a pipeline written, more issues are getting discovered as we try to integrate the parts together, such as the format for passing information, the uncontrolled environment that caused unforeseen challenges to the CV algorithm, among other things. Being fully integrated is top on our priority list, and we believe we are close.
