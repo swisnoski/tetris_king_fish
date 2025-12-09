@@ -14,7 +14,7 @@ import pygame.freetype
 # and also let's just do some pieces
 
 I = np.array(
-    [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0]]
+    [[0, 0, 0, 0], [1, 1, 1, 1],  [0, 0, 0, 0], [0, 0, 0, 0]]
 )  # starts flat??, spawns at (4,0)
 
 T = np.array(
@@ -301,3 +301,4 @@ class Tetris:
 
 my_tetris = Tetris()
 my_tetris.loop()
+
