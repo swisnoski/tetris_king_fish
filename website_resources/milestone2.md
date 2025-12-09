@@ -34,6 +34,23 @@ Largely, the work for this section is completed. While there is slightly more wo
 
 **3. Reinforcement Learning:**
 
+We've proven the concept for RL! Through the support of MGHPCC, we've successfully trained an RL model that is capable of learning *something*. Specifically, for an agent that places the blocks randomly, the average score per 100 games is close to 0. With our model, we were able to achieve a total of ~200 lines cleared per 100 games, a non insignificant improvement compared to random reference samples. 
+
+<p align="center">
+  <img src="htop.png" alt="htop" width="45%" style="margin-right: 10px;">
+  <img src="nvidia-smi.png" alt="nvidia-smi" width="45%">
+  <br>
+  <em>The remote machine hard at work...</em>
+</p>
+
+In particular, we devised a **Dueling Deep Q Learning** model, where a convolutional neural network takes in the game board as an image and processes it, while a separate network takes in a vector encoding the information about pieces. We then stitch the network together to combine the information, and output to two different networks---one evaluating the state of the board, and the other one evaluating the value of each potential action. We calculate the Q score for each action based on the state of the board and the projected reward for each action. 
+
+For the upcoming week, we will be focused on improving the performance of the model. We have a few leads: 
+- Setting our future reward discount factor to 0 and see if the network can approximate an instantaneous reward function
+- Do an automatic hyperparameter sweep
+- Adjusting our heuristic function so that it's easier to "warm up" the model
+- Potentially doing changes to the network architecture, albeit unlikely
+
 
 **4. Robotic Arm Controls:** 
 
