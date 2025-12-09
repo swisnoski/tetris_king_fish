@@ -51,7 +51,7 @@ To integrate smoothly with the other components of the project, we wrapped these
 
 The function `initialize_video_capture()` initializes the webcam video capture using OpenCV's built in `VideoCapture()` function, and runs once at our program start. From there, `get_cv_info()` is called at the beginning of every program loop, in order update the game state and current piece.
 
-While we have made a lot of progress, we have some remaining tuning and testing to do in order to make our computer vision more reliable and efficient. Most of this centers around the imperfect playing environment that we've begun to discover with more testing, with a webcam that initializes on some computeres to a black screen, slight grid warping from an imperfect camera placement, and heavy saturation from our webcam looking at a TV screen.
+While we have made a lot of progress, we have some remaining tuning and testing to do in order to make our computer vision more reliable and efficient. Most of this centers around the imperfect playing environment that we've begun to discover with more testing, with, among other quirks, a webcam that initializes on some computers to a black screen, slight grid warping from an imperfect camera placement, and heavy saturation on some tetris pieces from our webcam looking at a TV screen.
 
 Goals for end of project:
 - increase consistency of grid detection corner points
