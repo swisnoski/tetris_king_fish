@@ -19,7 +19,7 @@ For this milestone, the objective is to optimize the arm speed to enable for rea
 
 Here are the specific tasks achieved in this milestone:
 - Physical setup with arm and controller, currently being held in place by wall putty.
-- Integrating arm ROS node with `/action` topic which publishes list: [rotations, moves left/right]. Arm node receives data and performs required movement to press buttons on the controller
+- Integrating arm ROS node with `/action` topic which publishes list: `[rotations, moves left/right]`. Arm node receives data and performs required movement to press buttons on the controller
 - Implement threading to increase task speed. Works 90% of the time. However, at times, the arm will duplicate one task, most likely a concurrency problem.
 
 Goals til end of project:
