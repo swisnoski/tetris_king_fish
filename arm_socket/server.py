@@ -130,6 +130,8 @@ def main():
     mc.set_fresh_mode(0)
     mc2 = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
 
+    mc.send_angles(action["home"], 30)
+
     data = [3, 3]
 
     rotations = data[0]
