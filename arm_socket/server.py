@@ -91,7 +91,7 @@ def move(instr, mc, mc2):
     """
     start = time.perf_counter()
     thread1 = threading.Thread(target=move_thread, args=(instr, mc))
-    thread2 = threading.Thread(target=home_thread, args=(mc2))
+    thread2 = threading.Thread(target=home_thread, args=(mc2,))
 
     thread1.start()
     thread2.start()
@@ -103,28 +103,9 @@ def move(instr, mc, mc2):
 
 
 def main():
-    """server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind((HOST, PORT))
-    server_socket.listen(1)
-
-    print(f"Server listening on {HOST}:{PORT}")
-
-    conn, addr = server_socket.accept()
-    print(f"Connected by {addr}")
-
-    while True:
-        data = conn.recv(1024)
-        if not data:
-            break
-
-        print(f"Client says: {data.decode()}")
-
-        # Echo back or send your own message
-        message = input("Reply: ")
-        conn.sendall(message.encode())
-
-    conn.close()
-    server_socket.close()"""
+    """
+    Starts a server and moves arm based on messages receieved through socket TCP
+    """
 
     mc = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
     mc.set_fresh_mode(0)
@@ -155,6 +136,29 @@ def main():
             for _ in range(int(abs(movement))):
                 move(direction, mc, mc2)
     move("drop", mc, mc2)
+
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind((HOST, PORT))
+    server_socket.listen(1)
+
+    print(f"Server listening on {HOST}:{PORT}")
+
+    conn, addr = server_socket.accept()
+    print(f"Connected by {addr}")
+
+    while True:
+        data = conn.recv(1024)
+        if not data:
+            break
+
+        print(f"Client says: {data.decode()}")
+
+        # Echo back or send your own message
+        message = input("Reply: ")
+        conn.sendall(message.encode())
+
+    conn.close()
+    server_socket.close()
 
 
 if __name__ == "__main__":
