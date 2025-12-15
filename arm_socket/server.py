@@ -113,7 +113,7 @@ def main():
 
     mc.send_angles(action["home"], 30)
 
-    data = [3, 3]
+    """data = [3, 3]
 
     rotations = data[0]
     movement = data[1]
@@ -135,7 +135,7 @@ def main():
         if direction is not None:
             for _ in range(int(abs(movement))):
                 move(direction, mc, mc2)
-    move("drop", mc, mc2)
+    move("drop", mc, mc2)"""
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((HOST, PORT))
@@ -152,10 +152,6 @@ def main():
             break
 
         print(f"Client says: {data.decode()}")
-
-        # Echo back or send your own message
-        message = input("Reply: ")
-        conn.sendall(message.encode())
 
     conn.close()
     server_socket.close()

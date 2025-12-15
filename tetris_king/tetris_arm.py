@@ -98,7 +98,7 @@ class TetrisArm(Node):
             direction = "left"
         elif movement > 0:
             direction = "right"
-        """
+
         # Move arm based on instructions
         if not self.mc.is_moving():
             # Rotate
@@ -109,8 +109,6 @@ class TetrisArm(Node):
             if direction is not None:
                 for _ in range(int(abs(movement))):
                     self.move(direction)
-        """
-        self.move("drop")
         self.move("drop")
 
     def move_thread(self, instr):
