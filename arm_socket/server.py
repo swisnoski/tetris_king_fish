@@ -12,8 +12,8 @@ action = {
     "rotate": [
         18.896427559783373,
         -62.452611655657684,
-        -103.86327743819963,
-        76.31591297391039,
+        -107.86327743819963,
+        80.31591297391039,
         -8.511738616185274e-06,
         0,
     ],
@@ -154,7 +154,6 @@ def main():
             if direction is not None:
                 for _ in range(int(abs(movement))):
                     move(direction, mc, mc2)
-        move("drop", mc, mc2)
 
     conn.close()
     server_socket.close()
