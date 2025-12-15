@@ -6,8 +6,6 @@ from collections import deque
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from tetris_king.tetris_sim.tetris_rl import Tetris_RL
 
 
@@ -72,10 +70,10 @@ state_size = 28
 action_size = 44
 
 # Hyperparameters
-gamma = 0
+gamma = 0.9
 epsilon_min = 0.05
-epsilon_decay = 0.999
-learning_rate = 0.0005  # an order of magnitude larger?
+epsilon_decay = 0.9995
+learning_rate = 0.005  # an order of magnitude larger?
 batch_size = 128
 memory_size = 100000
 
@@ -143,13 +141,14 @@ def replay():
     current_q = policy_net(boards, piece_infos).gather(1, actions)
 
     # Target Q values
-    next_q = target_net(boards, piece_infos).max(1)[0].detach().unsqueeze(1)
+    next_q = target_net(next_boards, next_piece_infos).max(1)[0].detach().unsqueeze(1)
     target_q = rewards + (gamma * next_q * (1 - dones))
 
     loss = loss_fn(current_q, target_q)
 
     optimizer.zero_grad()
     loss.backward()
+    torch.nn.utils.clip_grad_norm_(policy_net.parameters(), max_norm=10)
     optimizer.step()
 
 
