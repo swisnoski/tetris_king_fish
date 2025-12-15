@@ -151,7 +151,10 @@ def main():
         if not data:
             break
 
-        print(f"Client says: {data.decode()}")
+        decoded = data.decode()
+        lst = ast.literal_eval(decoded)
+        print(f"Client says: {lst}")
+        print(f"Typeof: {type(lst)}")
 
     conn.close()
     server_socket.close()
