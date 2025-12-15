@@ -13,8 +13,19 @@ HSV_COLOR_MAP = {
     "L": [15, 155, 225], # orange [15 162 226] [14 150 224]
     "O": [35, 90, 245], # yellow [35, 88, 240] [35, 88, 240] [32, 98, 252] [32, 94, 255]
     "S": [70, 200, 250], # green [70 138 214]; [ 74 228 255]
-    "T": [134, 140, 248], # purple 19,0: [133 158 247] [135 134 248]; [139 183 255]
+    "T": [134, 164, 248], # purple 19,0: [133 158 247] [135 134 248]; [139 183 255], [135, 151, 255], [132, 196, 255]
     "Z": [7, 178, 230], # red [6 174 231] [8 180 231]
+}
+
+HSV_ALL_PIECES = {
+    "I": [95, 200, 250], # light blue [95 144 252] [95 145 252] [97 145 251] [ 96 142 252] slight outlier: [ 90 122 254] [ 90 210 255] [ 90 217 255]
+    "J": [110, 164, 248], # blue [111 177 247] [110 190 247] [109 158 248] [109 139 248]
+    "L": [15, 155, 225], # orange [15 162 226] [14 150 224]
+    "O": [35, 90, 245], # yellow [35, 88, 240] [35, 88, 240] [32, 98, 252] [32, 94, 255]
+    "S": [70, 200, 250], # green [70 138 214]; [ 74 228 255]
+    "T": [134, 164, 248], # purple 19,0: [133 158 247] [135 134 248]; [139 183 255], [135, 151, 255], [132, 196, 255]
+    "Z": [7, 178, 230], # red [6 174 231] [8 180 231]
+    "GRAY": [96, 86, 255], # gray puyo block [95, 35, 100]
 }
 
 # Color tolerance (higher=easier match)
@@ -89,7 +100,7 @@ def check_fill(img, check_grid):
             pixel = img[y, x]
             # print(f'pixel: {pixel}')
             # print(f'START CHECKING PIXEL FILL: {i,j}')
-            if classify_cell_color(pixel):
+            if classify_cell_color(pixel, HSV_ALL_PIECES):
              # access image at row pixel, col pixel
                 # print("filled")
                 game_state_grid[i][j] = 1
@@ -152,7 +163,7 @@ def check_fill(img, check_grid):
                 curr_coords = bfs(i, j)
                 # print(f'RIGGHT AFTER BFS: {game_state_grid}')
                 if curr_coords is not None: # if have detected current piece --> SCRUB
-                    print("Detected floating island of current piece!")
+                    # print("Detected floating island of current piece!")
                     # print(f'curr_coords to scrub: {curr_coords}')
                     for coord in curr_coords:
                         # print(f"coordinate to 0 out: {game_state_grid[coord[0]][coord[1]]}")
@@ -182,19 +193,17 @@ def get_current_piece(img, coords_grid, game_state_grid):
                 if cell == 1:
                     pixel = img[coords_grid[i][j]]
                     # print(f'pixel = {pixel}')
-                    current_piece = classify_cell_color(pixel)
+                    current_piece = classify_cell_color(pixel, HSV_COLOR_MAP)
                     print(current_piece)
 
     # return current_piece (either None is no detection, or classified)
     return current_piece
 
-
-def classify_cell_color(bgr_color: np.ndarray) -> str:
+def classify_cell_color(bgr_color, color_map) -> str:
     """
     Finds closest color in HSV_COLOR_MAP using HSV squared distance.
     Returns color name or None.
     """
-
     # Convert BGR pixel → HSV
     hsv_pixel = cv.cvtColor(
         np.uint8([[bgr_color]]),
@@ -206,10 +215,10 @@ def classify_cell_color(bgr_color: np.ndarray) -> str:
     closest_name = None
 
     # Compare to each reference HSV color using squared distance
-    for name, hsv_ref in HSV_COLOR_MAP.items():
+    for name, hsv_ref in color_map.items():
         hsv_ref = np.array(hsv_ref)
 
-        # print(f'pixel hsv: {hsv_pixel}, {name} hsv: {hsv_ref}')
+        print(f'pixel hsv: {hsv_pixel}, {name} hsv: {hsv_ref}')
         distance = hsv_distance(hsv_pixel, hsv_ref)
 
         if distance < min_distance:

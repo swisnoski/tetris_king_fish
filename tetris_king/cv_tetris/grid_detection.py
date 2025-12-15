@@ -10,12 +10,22 @@ import argparse
 import os
 from typing import Optional, List
 
+# Debug
+DEBUG_DISPLAY = True
+# ----------------------------
+
+def debug_show(title, img, pts=None):
+    if DEBUG_DISPLAY:
+        disp = img.copy()
+        if pts is not None:
+            for x, y in pts:
+                cv2.circle(disp, (int(x), int(y)), 8, (0,0,255), -1)
+        cv2.imshow(title, disp)
+        cv2.waitKey(1)
+
 # ---------- Config ----------
 GRID_WIDTH = 10
 GRID_HEIGHT = 20
-BLOCK_PX = 50
-WARPED_WIDTH = GRID_WIDTH * BLOCK_PX
-WARPED_HEIGHT = GRID_HEIGHT * BLOCK_PX
 
 # Hough parameters
 HOUGH_P_RHO = 1
@@ -28,7 +38,7 @@ HOUGH_MAX_LINE_GAP = 10
 BOUNDARY_SHRINK_PX = 6 
 VERTICAL_OFFSET_PX = -5 
 BOTTOM_EXPAND_PX = 10 
-TOP_DROP_PX = 11 
+TOP_DROP_PX = 5
 
 # Top Horizontal Skew Correction: Increased to -10 for aggressive perspective correction.
 TOP_SKEW_X = -10 
@@ -257,148 +267,47 @@ def normalize_vertical_alignment(rect: np.ndarray) -> np.ndarray:
     
     return rect
 
-def main():
-    p = argparse.ArgumentParser()
-    p.add_argument("--image", "-i", required=False, default="/home/satchel/tetris_king_fish/tetris_king/cv_tetris/assets/start_tetris_cleaned.jpg",
-                   help="Path to image")
-    p.add_argument("--use-yolo", action="store_true", help="Try YOLO board detection (optional)")
-    args = p.parse_args()
-
-    # Load image (or create placeholder if path is bad/missing)
-    try:
-        img = cv2.imread(args.image)
-        if img is None:
-             img = np.zeros((1080, 1920, 3), dtype=np.uint8) 
-    except Exception:
-        img = np.zeros((1080, 1920, 3), dtype=np.uint8)
-
-    # 1. Detection
-    board_rect = detect_board_hough(img)
-
-    if board_rect is not None:
-        board_rect = order_points(board_rect)
-
-    if board_rect is None and args.use_yolo:
-        board_rect = try_yolo_board_detect(args.image) 
-        if board_rect is not None:
-            board_rect = order_points(board_rect)
-
-    if board_rect is None:
-        board_rect = detect_board_colormask(img) 
-
-    if board_rect is None:
-        print("Failed to find board by any method.")
-        return
-
-    # 2. Automated and Manual Corrections
-
-    # Change 1: Shrink boundary inward
-    if BOUNDARY_SHRINK_PX > 0:
-        board_rect = adjust_rectangle_inward(board_rect, BOUNDARY_SHRINK_PX)
-    
-    # Change 2: Apply vertical offset
-    if VERTICAL_OFFSET_PX != 0:
-        board_rect[:, 1] += VERTICAL_OFFSET_PX  
-    
-    # Change 3: Expand bottom edge
-    if BOTTOM_EXPAND_PX != 0:
-        board_rect[2, 1] += BOTTOM_EXPAND_PX  
-        board_rect[3, 1] += BOTTOM_EXPAND_PX  
-
-    # Change 4: Specific top drop
-    if TOP_DROP_PX != 0:
-        board_rect[0, 1] += TOP_DROP_PX  
-        board_rect[1, 1] += TOP_DROP_PX  
-    
-    # Change 5: Top horizontal skew correction (Undistortion fix)
-    if TOP_SKEW_X != 0:
-        board_rect[1, 0] += TOP_SKEW_X 
-        
-    # Change 7: Automatic vertical undistortion (Leveling fix)
-    board_rect = normalize_vertical_alignment(board_rect)
-
-    # 3. Output Final Coordinates
-
-    # Convert coordinates to integers for clean output
-    final_coords = board_rect.astype(int)
-
-    # Output only the four corner coordinates in the requested format
-    for i, label in enumerate(["TL", "TR", "BR", "BL"]):
-        print(f"{final_coords[i][0]},{final_coords[i][1]}")
-
-    # final_coords = []
-    output_coords = []
-    for i in range(4):
-        output_coords.append((final_coords[i][0], final_coords[i][1]))
-
-    print(output_coords)
-    return output_coords 
 
 def get_grid_coords(img):
     # 1. Detection
-    # print(type(img))
     board_rect = detect_board_hough(img)
-
     use_yolo = True
 
     if board_rect is not None:
         board_rect = order_points(board_rect)
-
     if board_rect is None and use_yolo:
         board_rect = try_yolo_board_detect(img) 
         if board_rect is not None:
             board_rect = order_points(board_rect)
-
     if board_rect is None:
         board_rect = detect_board_colormask(img) 
-
     if board_rect is None:
         print("Failed to find board by any method.")
+        debug_show("Grid Detection Debug", img)
         return
 
-    # 2. Automated and Manual Corrections
-
-    # Change 1: Shrink boundary inward
-    if BOUNDARY_SHRINK_PX > 0:
-        board_rect = adjust_rectangle_inward(board_rect, BOUNDARY_SHRINK_PX)
-    
-    # Change 2: Apply vertical offset
-    if VERTICAL_OFFSET_PX != 0:
-        board_rect[:, 1] += VERTICAL_OFFSET_PX  
-    
-    # Change 3: Expand bottom edge
-    if BOTTOM_EXPAND_PX != 0:
-        board_rect[2, 1] += BOTTOM_EXPAND_PX  
-        board_rect[3, 1] += BOTTOM_EXPAND_PX  
-
-    # Change 4: Specific top drop
+    # # 2. Corrections
+    # if BOUNDARY_SHRINK_PX > 0:
+    #     board_rect = adjust_rectangle_inward(board_rect, BOUNDARY_SHRINK_PX)
+    # if VERTICAL_OFFSET_PX != 0:
+    #     board_rect[:,1] += VERTICAL_OFFSET_PX
+    # if BOTTOM_EXPAND_PX != 0:
+    #     board_rect[2,1] += BOTTOM_EXPAND_PX
+    #     board_rect[3,1] += BOTTOM_EXPAND_PX
     if TOP_DROP_PX != 0:
-        board_rect[0, 1] += TOP_DROP_PX  
-        board_rect[1, 1] += TOP_DROP_PX  
-    
-    # Change 5: Top horizontal skew correction (Undistortion fix)
-    if TOP_SKEW_X != 0:
-        board_rect[1, 0] += TOP_SKEW_X 
-        
-    # Change 7: Automatic vertical undistortion (Leveling fix)
-    board_rect = normalize_vertical_alignment(board_rect)
+        board_rect[0,1] += TOP_DROP_PX
+        board_rect[1,1] += TOP_DROP_PX
+    # if TOP_SKEW_X != 0:
+    #     board_rect[1,0] += TOP_SKEW_X
+    # board_rect = normalize_vertical_alignment(board_rect)
 
-    # 3. Output Final Coordinates
+    # 3. Debug display
+    debug_show("Grid Detection Debug", img, board_rect)
 
-    # Convert coordinates to integers for clean output
+    # 4. Return integer coordinates
     final_coords = board_rect.astype(int)
-
-    # Output only the four corner coordinates in the requested format
-    # for i, label in enumerate(["TL", "TR", "BR", "BL"]):
-    #     print(f"{final_coords[i][0]},{final_coords[i][1]}")
-
-    # final_coords = []
-    output_coords = []
-    for i in range(4):
-        output_coords.append((final_coords[i][0], final_coords[i][1]))
-
-    # print(output_coords)
-    return output_coords 
+    output_coords = [(final_coords[i,0], final_coords[i,1]) for i in range(4)]
+    return output_coords
 
 if __name__ == "__main__":
     main()

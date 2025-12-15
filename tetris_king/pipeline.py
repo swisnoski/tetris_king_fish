@@ -1,4 +1,5 @@
 import numpy as np
+import cv2 as cv
 
 
 from threading import Thread
@@ -15,6 +16,8 @@ def loop():
             current_piece = None
             while current_piece is None:
                 game_state, current_piece = get_cv_info(cap, grid_pts)
+                if cv.waitKey(20) == ord('q'):
+                    break
     
             try:
                 np.testing.assert_array_equal(my_tetris.board[2:-1,1:-1], game_state)
