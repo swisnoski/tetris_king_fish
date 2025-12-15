@@ -7,7 +7,7 @@ from my_interfaces.msg import MyTuple
 
 from tetris_sim.tetris_pipeline import Tetris_PIPE
 from tetris_sim.tetris_max import find_best_move
-from cv_tetris.cv_pipeline import initialize_video_capture, get_cv_info
+from cv_tetris.cv_pipeline import initialize_video_capture, initialize_grid, get_cv_info
 
 
 
@@ -27,10 +27,11 @@ class TetrisBot(Node):
         thread.start()
          
     def loop(self):
+        grid_pts = initialize_grid(self.cap)
         while True:
                 current_piece = None
                 while current_piece is None:
-                    game_state, current_piece = get_cv_info(self.cap)
+                    game_state, current_piece = get_cv_info(self.cap, grid_pts)
 
                 try:
                     np.testing.assert_array_equal(self.my_tetris.board[2:-1,1:-1], game_state)
