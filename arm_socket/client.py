@@ -15,6 +15,9 @@ def main():
         message = input("Message to server: ")
         client_socket.sendall(message.encode())
 
+        data = client_socket.recv(1024)
+        print(f"Server replies: {data.decode()}")
+
     client_socket.close()
 
 

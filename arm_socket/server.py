@@ -155,6 +155,8 @@ def main():
                 for _ in range(int(abs(movement))):
                     move(direction, mc, mc2)
 
+            conn.sendall(("finished").encode())
+
     conn.close()
     server_socket.close()
 

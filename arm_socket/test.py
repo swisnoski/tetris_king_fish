@@ -3,8 +3,65 @@ import modules.util as util
 import numpy as np
 import time
 from pymycobot import MyCobot280
+import threading
 
 # mc = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
+mc = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
+mc.set_fresh_mode(0)
+mc2 = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
+
+action = {"rotate": []}
+
+
+def move_thread(instr, mc):
+    """
+    Thread to move arm
+    """
+    print("thread 1")
+    processed = False
+    while not processed:
+        try:
+            mc.send_angles(action[instr], 70)
+        except Exception:
+            processed = True
+        else:
+            processed = True
+    print("thread 1 finished")
+
+
+def home_thread(mc2):
+    """
+    Thread to check the status of arm
+    """
+    time.sleep(0.1)
+    print("thread 2")
+    processed = False
+    while not processed:
+        try:
+            mc2.send_angles(action["home"], 70)
+        except Exception:
+            pass
+        else:
+            processed = True
+    print("thread 2 finished")
+
+
+def move(instr, mc, mc2):
+    """
+    Move arm based on instruction
+    """
+    start = time.perf_counter()
+    thread1 = threading.Thread(target=move_thread, args=(instr, mc))
+    thread2 = threading.Thread(target=home_thread, args=(mc2,))
+
+    thread1.start()
+    thread2.start()
+
+    thread2.join()
+    thread1.join()
+    print(f"Threads join: {instr}")
+    print(f"Time: {time.perf_counter() - start}")
+
 
 # POS 1
 
@@ -32,5 +89,9 @@ while True:
     soln = util.rad2deg(soln)
     soln[5] = 0
 
+    action["rotate"] = soln
+
     print(f"Solution: {soln}")
     print(f"Error: {err}")
+
+    move("rotate", mc, mc2)
