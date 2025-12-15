@@ -1,67 +1,38 @@
 import numpy as np
-import rclpy
-from rclpy.node import Node
+
+
 from threading import Thread
-
-from my_interfaces.msg import MyTuple  
-
 from tetris_sim.tetris_pipeline import Tetris_PIPE
 from tetris_sim.tetris_max import find_best_move
 from cv_tetris.cv_pipeline import initialize_video_capture, initialize_grid, get_cv_info
 
 
+def loop():
+    my_tetris = Tetris_PIPE()
+    cap = initialize_video_capture()
+    grid_pts = initialize_grid(cap)
+    while True:
+            current_piece = None
+            while current_piece is None:
+                game_state, current_piece = get_cv_info(cap, grid_pts)
+    
+            try:
+                np.testing.assert_array_equal(my_tetris.board[2:-1,1:-1], game_state)
+            except: 
+                print("Discrepancy between CV detected board and internal board!")
+                print(f"CV detected board:\n{game_state}")
+                print(f"Internal board:\n{my_tetris.board[2:-1,1:-1]}")
+                my_tetris.board[2:-1,1:-1] = game_state
+
+            my_tetris.update_piece(current_piece)
+            r, t = find_best_move(my_tetris.board, my_tetris.current_piece.type)
+            my_tetris.execute_moves(r, t) #update the board, no need to display
 
 
-
-class TetrisBot(Node):
-    """
-    Class to initialize and establish subscriber/publisher interaction
-    """
-    def __init__(self):
-        super().__init__('tetris_bot')
-        self.action_publisher = self.create_publisher(MyTuple, '/action', 10)
-        self.my_tetris = Tetris_PIPE()
-        self.cap = initialize_video_capture()
-
-        thread = Thread(target=self.loop, daemon=True)
-        thread.start()
-         
-    def loop(self):
-        grid_pts = initialize_grid(self.cap)
-        while True:
-                current_piece = None
-                while current_piece is None:
-                    game_state, current_piece = get_cv_info(self.cap, grid_pts)
-
-                try:
-                    np.testing.assert_array_equal(self.my_tetris.board[2:-1,1:-1], game_state)
-                except: 
-                    print("Discrepancy between CV detected board and internal board!")
-                    print(f"CV detected board:\n{game_state}")
-                    print(f"Internal board:\n{self.my_tetris.board[2:-1,1:-1]}")
-                    self.my_tetris.board[2:-1,1:-1] = game_state
-
-                self.my_tetris.update_piece(current_piece)
-                r, t = find_best_move(self.my_tetris.board, self.my_tetris.current_piece.type)
-                self.my_tetris.execute_moves(r, t) #update the board, no need to display
-
-
-                move = MyTuple()
-                move.rotation = r
-                move.translation = t
-                self.action_publisher.publish(move)
-
-
-                # somehow communicate the move to the robot here
-
-
+            input('press enter')
 
 def main(args=None):
-    rclpy.init(args=args)
-    node = TetrisBot()
-    rclpy.spin(node)
-    rclpy.shutdown()
-
+    loop()
 
 if __name__ == "__main__":
     main()

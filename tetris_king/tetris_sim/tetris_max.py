@@ -1,4 +1,4 @@
-from tetris import Tetris, Piece, LOCATIONS
+from .tetris import Tetris, Piece, LOCATIONS
 import numpy as np
 import pygame
 import sys

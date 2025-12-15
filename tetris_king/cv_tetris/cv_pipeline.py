@@ -1,5 +1,5 @@
-import game_state_detection
-import grid_detection
+from . import game_state_detection
+from . import grid_detection
 import cv2 as cv 
 
 def initialize_video_capture():
