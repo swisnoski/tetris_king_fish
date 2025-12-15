@@ -7,19 +7,6 @@ import copy
 GRID_WIDTH = 10
 GRID_HEIGHT = 20
 
-# Block colors (BGR)
-COLOR_MAP = {
-    # "EMPTY": [0, 0, 0],         # Background
-    "I": [230, 130, 0],     # light blue
-    "J": [240, 60, 0],    # Dark Blue
-    "L": [85, 96, 226],   # Orange
-    "O": [120, 160, 170],   # Yellow
-    "S": [155, 200, 0],     # Green
-    "T": [209, 60, 110],   # Purple
-    "Z": [61, 17, 202],     # Red
-    "GRAY": [190, 190, 190]
-}
-
 HSV_COLOR_MAP = {
     "I": [95, 200, 250], # light blue [95 144 252] [95 145 252] [97 145 251] [ 96 142 252] slight outlier: [ 90 122 254] [ 90 210 255] [ 90 217 255]
     "J": [110, 164, 248], # blue [111 177 247] [110 190 247] [109 158 248] [109 139 248]
@@ -29,16 +16,6 @@ HSV_COLOR_MAP = {
     "T": [134, 140, 248], # purple 19,0: [133 158 247] [135 134 248]; [139 183 255]
     "Z": [7, 178, 230], # red [6 174 231] [8 180 231]
 }
-
-# HSV_COLOR_MAP = { OLD FROM PICS BEFORE TUNING 
-#     "I": [190, 90, 100], # light blue
-#     "J": [220, 65, 100], # blue 
-#     "L": [25, 75, 100], # orange
-#     "O": [60, 50, 100], # yellow
-#     "S": [150, 100, 95], # green
-#     "T": [270, 70, 100], # purple
-#     "Z": [15, 70, 100], # red
-# }
 
 # Color tolerance (higher=easier match)
 COLOR_TOLERANCE = 50
@@ -85,7 +62,9 @@ def initalize_matrix_fill(img, grid_pts):
             # print((x, y))
             # verify for now with drawing point on image
             cv.circle(img, (x, y), 5, (255, 255, 255), -1) 
-    show_close("Detected grid cells points", img)
+    
+    # visualize on image for testing
+    # show_close("Detected grid cells points", img)
     return check_grid
 
 def check_fill(img, check_grid):
@@ -103,32 +82,31 @@ def check_fill(img, check_grid):
 
     # iterate through the cetto check the game piece
     for i, row in enumerate(check_grid): # same size
-        print(f'----- NEW DAMN ROW TO CHECK FILL -----')
+        # print(f'----- NEW DAMN ROW TO CHECK FILL -----')
         for j, cell in enumerate(row):
             # check color 
             y, x = cell
             pixel = img[y, x]
             # print(f'pixel: {pixel}')
-            # print("check fill")
-            print(f'START CHECKING PIXEL FILL: {i,j}')
+            # print(f'START CHECKING PIXEL FILL: {i,j}')
             if classify_cell_color(pixel):
              # access image at row pixel, col pixel
                 # print("filled")
                 game_state_grid[i][j] = 1
+
                 # verify visually with a green dot
                 cv.circle(img, (x, y), 5, (0, 255, 0), -1) 
     
+    cv.namedWindow("Preview", cv.WINDOW_NORMAL)
     show_close("Check Fill", img)
 
     # print(f"Game grid before scrubbing: {game_state_grid}")
 
     # implement scrubbing of current piece
-    # check for island of pieces that's not connected to the bottom row 
-        # check adjaency through bfs
     grid = copy.deepcopy(game_state_grid) # copy for checking
     def bfs(x_og, y_og):
         """
-        A helper function that runs BFS to find floating island 
+        A helper function that runs BFS to find floating island, that's not connected to bottom row
 
         Args:
             x_og: an int representing the starting x coordinate of island
@@ -222,7 +200,7 @@ def classify_cell_color(bgr_color: np.ndarray) -> str:
         np.uint8([[bgr_color]]),
         cv.COLOR_BGR2HSV
     )[0][0]
-    print(f'- PIXEL bgr: {bgr_color}, hsv: {hsv_pixel}')
+    # print(f'- PIXEL bgr: {bgr_color}, hsv: {hsv_pixel}')
 
     min_distance = float('inf')
     closest_name = None
@@ -232,18 +210,16 @@ def classify_cell_color(bgr_color: np.ndarray) -> str:
         hsv_ref = np.array(hsv_ref)
 
         # print(f'pixel hsv: {hsv_pixel}, {name} hsv: {hsv_ref}')
-
-        # distance = np.sum((hsv_pixel.astype(int) - hsv_ref.astype(int)) ** 2)
         distance = hsv_distance(hsv_pixel, hsv_ref)
 
         if distance < min_distance:
             min_distance = distance
             closest_name = name
-            print(f'closest color piece match: {closest_name}, distance {min_distance}')
+            # print(f'closest color piece match: {closest_name}, distance {min_distance}')
 
     # reject if too far
     if min_distance < COLOR_TOLERANCE ** 2:
-        print(closest_name)
+        # print(closest_name)
         return closest_name
     else:
         return None
@@ -254,33 +230,6 @@ def hsv_distance(hsv1, hsv2, wH=8, wS=1, wV=1):
     dv = hsv1[2] - hsv2[2]
     return wH * dh * dh + wS * ds * ds + wV * dv * dv
 
-# def classify_cell_color(bgr_color: np.ndarray) -> str:
-#     """
-#     Finds closest color in COLOR_MAP.
-#     """
-    
-#     min_distance = float('inf')
-#     closest_color_name = "EMPTY"
-    
-#     for name, color in COLOR_MAP.items():
-#         color_array = np.array(color)
-        
-#         # Squared distance (B,G,R space)
-#         distance = np.sum((bgr_color.astype(int) - color_array.astype(int)) ** 2)
-
-#         # print(distance)
-        
-#         if distance < min_distance:
-#             min_distance = distance
-#             closest_color_name = name
-    
-#     # Check if distance OK
-#     if min_distance < COLOR_TOLERANCE ** 2: # Squared for distance check
-#         # print(closest_color_name)
-#         return closest_color_name
-#     else:
-#         return None
-        
 def show_close(caption, img):
     """
     Helper function to simplify repeated showing and closing of cv windows
@@ -288,9 +237,12 @@ def show_close(caption, img):
     caption: a string for the img caption
     img: CV image to show
     """
-    cv.imshow(caption, img)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
+    # handle showing and close operations
+    cv.imshow(caption, img) # overwrites previous img of same name if exists
+    if cv.getWindowProperty(caption, cv.WND_PROP_VISIBLE) < 1:
+        import sys
+        cv.destroyAllWindows()
+        sys.exit(0)
 
 def main(args=None):
     # CHANGE THIS PATH to the location of your Tetris game screen

@@ -8,7 +8,7 @@ def initialize_video_capture():
     """
     # feed in video 
     cap = cv.VideoCapture(0)
-    # if not live:
+    # UNCOMMENT if not live feed:
     # cap = cv.VideoCapture("./assets/video_final.mp4")        
 
     # check for error:
@@ -23,11 +23,11 @@ def initialize_video_capture():
 
 def video_to_frame(cap):
     """
-    Returns cv img frame to read from
+    Helper function to return cv img frame to read from
 
     frame: img numpy frame
     """
-    # FOR VIDEO TESTING: skipping to go 5 frames at a time:
+    # UNCOMMENT FOR RECORDED VID TESTING ONLY: skips to go 5 frames at a time
     # for _ in range(20):
     #     cap.grab()   # fast skip
 
@@ -37,15 +37,77 @@ def video_to_frame(cap):
     if ret:
     # Display the first frame using imshow
         cv.imshow("Captured Frame", frame)
-        cv.waitKey(0)  # Wait for a key press to close the window
-        cv.destroyAllWindows()  # Close the window
         return ret, frame
     else:
         print("Error: Could not read a frame from the sequence.")
         return None
-
-def initialize_grid(img):
+    
+def initialize_grid(cap):
     """
+    Initialize grid corners and cells coordinates, waits for approval of user hitting 'g'
+    """
+    corner_pts = None
+    grid_pts = None
+    grid_ready = False
+
+    # loop until approval for initializing grid
+    while grid_ready is False:
+        ret, img = video_to_frame(cap) 
+        # get corner_pts from frame, loop until actually detecting a grid
+        while corner_pts is None:
+            if ret: # if got frame correctly, check fill
+                print("Got frame")
+                # get grid_pts
+                # corner_pts = [(220, 40),(470, 40),(470, 500),(220, 500)]
+                corner_pts = grid_detection.get_grid_coords(img)
+            if corner_pts is None:
+                ret, img = video_to_frame(cap) 
+            # print(f'Corner points: {corner_pts}')
+
+        # get coordinates of cells, hang until 'g' pressed to continue
+        grid_img = img.copy()
+        grid_pts = game_state_detection.initalize_matrix_fill(grid_img, corner_pts)
+
+        # visualize grid initalization
+        cv.putText(grid_img, "Press g if ready, any other key to re-try grid search", (20, 50), cv.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 4)
+        cv.imshow('Grid Initialization', grid_img)
+        if cv.waitKey(0) == ord('g'):
+            grid_ready = True
+            cv.destroyWindow('Grid Initialization')
+
+    return grid_pts
+    
+def get_cv_info(cap, grid_pts):
+    """
+    Function called by game super loop that returns game_state matrix and current_piece
+
+    Args:
+    - cap: CV VideoCapture object
+
+    Returns:
+    - tuple of game_state, current_piece
+    """
+    game_state = None
+    current_piece = None
+    
+    ret, img = video_to_frame(cap) 
+    if ret:
+        # detect filled cells
+        game_state = game_state_detection.check_fill(img, grid_pts)
+        # get current piece
+        current_piece = game_state_detection.get_current_piece(img, grid_pts, game_state)
+        # print(current_piece)
+        print(f'Final game state and current piece: {game_state, current_piece}')
+        return game_state, current_piece
+    else:
+        print("Error: Could not read a frame from the sequence.")
+        return None, None
+    
+# --------------------------- HELPER FUNCTIONS FOR TESTING -----------------------------------
+    
+def get_grid(img):
+    """
+    Helper function 
     Args:
     - img: opencv img numpy obj ect 
     """
@@ -62,42 +124,6 @@ def initialize_grid(img):
     check_grid = game_state_detection.initalize_matrix_fill(img, pts)
     return check_grid
 
-def get_cv_info(cap):
-    """
-    Final function called by game super loop that returns game_state matrix and current_piece
-
-    Args:
-    - cap: CV VideoCapture object
-
-    Returns:
-    - tuple of game_state, current_piece
-    """
-    corner_pts = None
-    grid_pts = None
-    game_state = None
-    current_piece = None
-    if cap:
-        ret, img = video_to_frame(cap) 
-        while corner_pts is None:
-            if ret: # if got frame correctly, check fill
-                print("Got frame")
-                # get grid_pts
-                # corner_pts = [(220, 40),(470, 40),(470, 500),(220, 500)]
-                corner_pts = grid_detection.get_grid_coords(img)
-            if corner_pts is None:
-                ret, img = video_to_frame(cap) 
-        print(f'Corner points: {corner_pts}')
-        grid_img = img.copy()
-        grid_pts = game_state_detection.initalize_matrix_fill(grid_img, corner_pts)
-        game_state = game_state_detection.check_fill(img, grid_pts)
-        # get current piece
-        current_piece = game_state_detection.get_current_piece(img, grid_pts, game_state)
-        # print(current_piece)
-        print(f'Final game state and current piece: {game_state, current_piece}')
-        return game_state, current_piece
-    else:
-        return None, None
-
 def process_image(img):
     """
     Helper function for all things just needing an img, with game_state and fill detection
@@ -111,6 +137,8 @@ def process_image(img):
     current_piece = game_state_detection.get_current_piece(img, grid_pts, game_state)
     # print(current_piece)
     return game_state, current_piece
+
+# --------------------------- TESTING FUNCTIONS -----------------------------------
 
 def test_frame():
     """
@@ -143,7 +171,21 @@ def test_video_loop():
     finally:
         cap.release()
 
+def test_new_video_loop():
+    cap = initialize_video_capture()
+    try:
+        grid_pts = initialize_grid(cap)
+        while True:
+            game_state, current_piece = get_cv_info(cap, grid_pts)
+            # allow KeyboardInterrupt
+            if cv.waitKey(20) == ord('q'):
+                break
+    except KeyboardInterrupt:
+        print("Shutting down")
+    finally:
+        cap.release()
+
 if __name__ == "__main__":
     # test_frame()
-    test_video_loop()
+    test_new_video_loop()
     
