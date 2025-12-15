@@ -10,7 +10,17 @@ mc = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
 mc.set_fresh_mode(0)
 mc2 = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
 
-action = {"rotate": []}
+action = {
+    "rotate": [],
+    "home": [
+        19.38766022032492,
+        -48.53838,
+        -111.69046,
+        70.22889,
+        0,
+        0,
+    ],
+}
 
 
 def move_thread(instr, mc):
