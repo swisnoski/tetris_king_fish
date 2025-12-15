@@ -74,6 +74,10 @@ def initialize_grid(cap):
         if cv.waitKey(0) == ord('g'):
             grid_ready = True
             cv.destroyWindow('Grid Initialization')
+        else:
+            # reset corner and grid points
+            corner_pts = None
+            grid_pts = None
 
     return grid_pts
     
