@@ -299,6 +299,12 @@ class Tetris:
             self.check_loss()
 
 
-my_tetris = Tetris()
-my_tetris.loop()
+def main(args=None):
+    my_tetris = Tetris()
+    my_tetris.loop()
+
+if __name__ == "__main__":
+    main()
+
+
 

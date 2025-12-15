@@ -1,5 +1,5 @@
-from tetris import Tetris, Piece, LOCATIONS
-from tetris_max import find_best_move
+from .tetris import Tetris, Piece, LOCATIONS
+from .tetris_max import find_best_move
 import numpy as np
 
 
