@@ -156,6 +156,30 @@ def main():
         print(f"Client says: {lst}")
         print(f"Typeof: {type(lst)}")
 
+        data = lst
+
+        rotations = data[0]
+        movement = data[1]
+
+        # Decide whether movement is left or right
+        direction = None
+        if movement < 0:
+            direction = "left"
+        elif movement > 0:
+            direction = "right"
+
+        # Move arm based on instructions
+        if not mc.is_moving():
+            # Rotate
+            if rotations != 0:
+                for _ in range(int(rotations)):
+                    move("rotate", mc, mc2)
+            # Move
+            if direction is not None:
+                for _ in range(int(abs(movement))):
+                    move(direction, mc, mc2)
+        move("drop", mc, mc2)
+
     conn.close()
     server_socket.close()
 
