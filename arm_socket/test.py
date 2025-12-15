@@ -19,8 +19,8 @@ start_time = time.perf_counter()
 
 UP = [0.21, 0, 0.045]
 DOWN = [0.19, 0, 0.045]
-LEFT = [0.2, -0.01, 0.045]
-RIGHT = [0.2, 0.01, 0.045]
+LEFT = [0.2, -0.013, 0.045]
+RIGHT = [0.2, 0.013, 0.045]
 HOME = [0.2, 0, 0.06]
 
 pos_list = [HOME, UP, DOWN, LEFT, RIGHT]
