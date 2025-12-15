@@ -4,7 +4,7 @@ import numpy as np
 import time
 from pymycobot import MyCobot280
 
-mc = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
+# mc = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
 
 # POS 1
 
@@ -34,16 +34,3 @@ while True:
 
     print(f"Solution: {soln}")
     print(f"Error: {err}")
-
-    mc.send_angles(soln, 30)
-    mc.send_angles(
-        [
-            19.38766022032492,
-            -48.53838,
-            -111.69046,
-            70.22889,
-            0,
-            0,
-        ],
-        30,
-    )
