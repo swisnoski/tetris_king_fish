@@ -10,35 +10,35 @@ PORT = 5000  # Arbitrary port >1024
 
 action = {
     "rotate": [
-        18.70698233348091,
-        -62.812084700082664,
-        -102.3756482611303,
-        75.18775242605099,
-        -7.779765331039758e-06,
+        18.42945704984153,
+        -64.09078549771468,
+        -99.60140781108544,
+        73.69215836314227,
+        3.0031403880330304e-05,
         0,
     ],
     "drop": [
-        20.452150451187027,
-        -62.76464772691289,
-        -113.34551195680278,
-        86.11017243216526,
-        -4.06473253008484e-06,
+        20.452218522213286,
+        -60.99628252971821,
+        -114.17945283171098,
+        85.17575425584124,
+        -6.356826471584472e-06,
         0,
     ],
     "left": [
-        22.224245716142704,
-        -64.16523573718025,
-        -105.9438513284137,
-        80.10907275844538,
-        1.2220142031219308e-05,
+        22.224149230856394,
+        -62.683497431891574,
+        -106.61694234639404,
+        79.30041567484217,
+        2.1517009588529715e-05,
         0,
     ],
     "right": [
-        16.499338057714052,
-        -64.30823824197729,
-        -105.83911545445714,
-        80.1473309816758,
-        2.1453826671196892e-05,
+        16.499995231431722,
+        -61.75319033436939,
+        -107.2852511676767,
+        79.0384707772517,
+        -8.59293671689396e-06,
         0,
     ],
     "home": [
@@ -112,30 +112,6 @@ def main():
     mc2 = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
 
     mc.send_angles(action["home"], 30)
-
-    """data = [3, 3]
-
-    rotations = data[0]
-    movement = data[1]
-
-    # Decide whether movement is left or right
-    direction = None
-    if movement < 0:
-        direction = "left"
-    elif movement > 0:
-        direction = "right"
-
-    # Move arm based on instructions
-    if not mc.is_moving():
-        # Rotate
-        if rotations != 0:
-            for _ in range(int(rotations)):
-                move("rotate", mc, mc2)
-        # Move
-        if direction is not None:
-            for _ in range(int(abs(movement))):
-                move(direction, mc, mc2)
-    move("drop", mc, mc2)"""
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((HOST, PORT))

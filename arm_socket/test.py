@@ -4,8 +4,6 @@ import numpy as np
 import time
 from pymycobot import MyCobot280
 
-mc = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
-
 # POS 1
 
 print("Starting IK")
@@ -19,41 +17,43 @@ total_time = 0
 
 start_time = time.perf_counter()
 
-desired_ee = [0.19, 0, 0.038]
-soln, err = inverse_kinematics(util.deg2rad([0, 0, 0, 0, 0, 0]), desired_ee, tol=0.001)
+UP = [0.21, 0, 0.045]
+DOWN = [0.19, 0, 0.045]
+LEFT = [0.2, -0.01, 0.045]
+RIGHT = [0.2, 0.01, 0.045]
+HOME = [0.2, 0, 0.06]
 
-print(f"Solution (radians): {soln}")
+pos_list = [HOME, UP, DOWN, LEFT, RIGHT]
 
-soln = util.rad2deg(soln)
-soln[5] = 0
+for pos in pos_list:
+    desired_ee = pos
+    soln, err = inverse_kinematics(
+        util.deg2rad([0, 0, 0, 0, 0, 0]), desired_ee, tol=0.001
+    )
 
-end_time = time.perf_counter()
+    print(f"Solution (radians): {soln}")
 
-print(f"Solution: {soln}")
-print(f"Error: {err}")
+    soln = util.rad2deg(soln)
+    soln[5] = 0
 
-elapsed_time = end_time - start_time
-total_time = total_time + elapsed_time
+    end_time = time.perf_counter()
 
-if err < 0.01:
-    success_count = success_count + 1
-count = count + 1
+    print(f"Solution: {soln}")
+    print(f"Error: {err}")
 
-avg_time = total_time / count
-success_rate = success_count / count
+    elapsed_time = end_time - start_time
+    total_time = total_time + elapsed_time
 
-print(f"Success rate: {success_rate}")
-print(f"Average time: {avg_time}")
+    if err < 0.01:
+        success_count = success_count + 1
+    count = count + 1
 
-mc.send_angles(
-    [
-        19.38766022032492,
-        -53.72804223828324,
-        -110.45016002179023,
-        74.17824998575445,
-        -2.1409152024860533e-05,
-        0,
-    ],
-    30,
-)
-mc.send_angles(soln, 70)
+    avg_time = total_time / count
+    success_rate = success_count / count
+
+    print(f"Success rate: {success_rate}")
+    print(f"Average time: {avg_time}")
+
+    print()
+    print()
+    print()
