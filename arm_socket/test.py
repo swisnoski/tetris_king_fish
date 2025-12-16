@@ -12,14 +12,7 @@ mc2 = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
 
 action = {
     "rotate": [],
-    "home": [
-        19.38766022032492,
-        -48.53838,
-        -111.69046,
-        70.22889,
-        0,
-        0,
-    ],
+    "home": [24.997305570185226, -49.63050036158377, -110.44722133723108, 70.07767431067634, 3.950022876936672e-05, 0],
     "home2": [
         34.879476733238256,
         -49.057293065782225,
@@ -64,7 +57,7 @@ def home_thread(mc2):
     processed = False
     while not processed:
         try:
-            mc2.send_angles(action["home3"], 70)
+            mc2.send_angles(action["home"], 70)
         except Exception:
             pass
         else:
