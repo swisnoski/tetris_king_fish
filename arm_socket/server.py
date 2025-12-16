@@ -26,7 +26,7 @@ action = {
         2.046404914793443e-05,
         0,
     ],
-    "left": [40.66641389903865, -59.80598033221904, -101.19645342513901, 71.00246810420892, -1.3729825531349562e-05, 0],,
+    "left": [38.4365773176817, -62.92300654834088, -102.18247832232365, 75.105499421619, -6.576339925501229e-06, 0],
     "right": [
         16.942364909303294,
         -61.42429237195168,
@@ -59,6 +59,7 @@ action = {
         -1.5380681461781622e-05,
         0,
     ],
+    "home4": [24.997305570185226, -49.63050036158377, -110.44722133723108, 70.07767431067634, 3.950022876936672e-05, 0]
 }
 
 
@@ -89,6 +90,8 @@ def home_thread(instr, mc2):
         try:
             if instr == "right":
                 mc2.send_angles(action["home2"], 100)
+            elif instr == "left":
+                mc2.send_angles(action["home4"], 100)
             else:
                 mc2.send_angles(action["home"], 100)
         except Exception:
@@ -170,6 +173,8 @@ def main():
 
             if direction == "right":
                 mc.send_angles(action["home2"], 100)
+            elif direction == "left":
+                mc.send_angles(action["home4"], 100)
             # Move
             if direction is not None:
                 for _ in range(int(abs(movement))):
