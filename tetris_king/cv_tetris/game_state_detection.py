@@ -7,22 +7,24 @@ import copy
 GRID_WIDTH = 10
 GRID_HEIGHT = 20
 
+# light blue [ 98 191 255] [ 90 210 255]
+# green [ 74 220 255] [74 246 255] [ 73 242 255]
 HSV_COLOR_MAP = {
-    "I": [95, 250, 250], # light blue [95 144 252] [95 145 252] [97 145 251] [ 96 142 252] slight outlier: [ 90 122 254] [ 90 210 255] [ 90 217 255]
+    "I": [95, 160, 250], # light blue [97, 130, 255]; [95 144 252] [95 145 252] [97 145 251] [ 96 142 252] slight outlier: [ 90 122 254] [ 90 210 255] [ 90 217 255]
     "J": [110, 164, 248], # blue [111 177 247] [110 190 247] [109 158 248] [109 139 248]
-    "L": [15, 155, 225], # orange [15 162 226] [14 150 224]
-    "O": [35, 90, 245], # yellow [35, 88, 240] [35, 88, 240] [32, 98, 252] [32, 94, 255]
-    "S": [150, 255, 250], # green [70 138 214]; [ 74 228 255]
+    "L": [15, 217, 240], # orange [14, 210, 248]; [15 162 226] [14 150 224]
+    "O": [26, 155, 245], # yellow NEW [26, 155, 240];[35, 88, 240] [35, 88, 240] [32, 98, 252] [32, 94, 255]
+    "S": [72, 140, 250], # green [70 138 214]; [ 74 228 255]
     "T": [134, 164, 248], # purple 19,0: [133 158 247] [135 134 248]; [139 183 255], [135, 151, 255], [132, 196, 255]
     "Z": [7, 178, 230], # red [6 174 231] [8 180 231]
 }
 
 HSV_ALL_PIECES = {
-    "I": [95, 250, 250], # light blue [95 144 252] [95 145 252] [97 145 251] [ 96 142 252] slight outlier: [ 90 122 254] [ 90 210 255] [ 90 217 255]
+    "I": [95, 130, 250], # light blue [95 144 252] [95 145 252] [97 145 251] [ 96 142 252] slight outlier: [ 90 122 254] [ 90 210 255] [ 90 217 255]
     "J": [110, 164, 248], # blue [111 177 247] [110 190 247] [109 158 248] [109 139 248]
     "L": [15, 155, 225], # orange [15 162 226] [14 150 224]
-    "O": [35, 90, 245], # yellow [35, 88, 240] [35, 88, 240] [32, 98, 252] [32, 94, 255]
-    "S": [150, 255, 250], # green [70 138 214]; [ 74 228 255]
+    "O": [26, 155, 245], # yellow [35, 88, 240] [35, 88, 240] [32, 98, 252] [32, 94, 255]
+    "S": [72, 140, 250], # green [70 138 214]; [ 74 228 255]
     "T": [134, 164, 248], # purple 19,0: [133 158 247] [135 134 248]; [139 183 255], [135, 151, 255], [132, 196, 255]
     "Z": [7, 178, 230], # red [6 174 231] [8 180 231]
     "GRAY": [96, 86, 255], # gray puyo block [95, 35, 100]
@@ -113,9 +115,6 @@ def check_fill(img, check_grid):
     # show_close("Check Fill", img)
 
     # print(f"Game grid before scrubbing: {game_state_grid}")
-
-
-
     # implement scrubbing of current piece
     grid = copy.deepcopy(game_state_grid) # copy for checking
     grid_p = copy.deepcopy(game_state_grid) # copy for checking
@@ -195,16 +194,16 @@ def get_current_piece(img, coords_grid, game_state_grid):
     # print(coords_grid)
     for i, row in enumerate(game_state_grid):
         for j, cell in enumerate(row):
-            if i < 5:            
+            if i < 3:            
                 if cell == 1:
                     y, x = coords_grid[i][j]
-                    print(f"Checking pixel at x={x}, y={y}")
+                    # print(f"Checking pixel at row {i}, col={j}")
                     pixel = img[y, x]
                     hsv_pixel = cv.cvtColor(
                         np.uint8([[pixel]]),
                         cv.COLOR_BGR2HSV
                     )[0][0]
-                    print(f"color = {hsv_pixel}")
+                    # print(f"color = {hsv_pixel}")
                     # show_close("img", img)
                     # Check a small 3x3 area to see the actual colors
                     # region = img[y-1:y+2, x-1:x+2]
@@ -253,6 +252,7 @@ def hsv_distance(hsv1, hsv2, wH=8, wS=1, wV=1):
     dh = min(abs(hsv1[0] - hsv2[0]), 180 - abs(hsv1[0] - hsv2[0]))  # hue wrap-around
     ds = hsv1[1] - hsv2[1]
     dv = hsv1[2] - hsv2[2]
+    return wH * dh * dh + wV * dv * dv
     return wH * dh * dh + wS * ds * ds + wV * dv * dv
 
 def show_close(caption, img):
