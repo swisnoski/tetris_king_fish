@@ -9,8 +9,10 @@ from tetris_sim.tetris_max import find_best_move
 from cv_tetris.cv_pipeline import initialize_video_capture, initialize_grid, get_cv_info
 import random
 
+
 def most_frequent(List):
     return max(set(List), key=List.count)
+
 
 def loop():
     # Connect to server
@@ -28,10 +30,10 @@ def loop():
         current_piece_list = []
         select_piece_and_game = False
         current_piece = None
-        game_state_current = np.zeros_like(my_tetris.board[2:-1,1:-1])
+        game_state_current = np.zeros_like(my_tetris.board[2:-1, 1:-1])
         while not select_piece_and_game:
             game_state, current_piece = get_cv_info(cap, grid_pts)
-            if current_piece is not None: 
+            if current_piece is not None:
                 current_piece_list.append(current_piece)
                 game_state_current += game_state
                 sleep(0.1)
@@ -43,34 +45,32 @@ def loop():
                 select_piece_and_game = True
             # print(current_piece_list)
 
-            if cv.waitKey(5) == ord('q'):
+            if cv.waitKey(5) == ord("q"):
                 break
 
         print(f"{current_piece}")
         try:
             np.testing.assert_array_equal(my_tetris.board[2:-1, 1:-1], game_state)
-        except: 
+        except:
             print("Discrepancy between CV detected board and internal board!")
             # print(f"CV detected board:\n{game_state}")
             # print(f"Internal board:\n{my_tetris.board[2:-1,1:-1]}")
-            my_tetris.board[2:-1,1:-1] = game_state
-            
+            my_tetris.board[2:-1, 1:-1] = game_state
 
         my_tetris.update_piece(current_piece)
         print(my_tetris.current_piece.type)
         print(my_tetris.board)
+        print(my_tetris.board[2:-1, 1:-1])
         r, t = find_best_move(my_tetris.board, my_tetris.current_piece.type)
         my_tetris.execute_moves(r, t) #update the board, no need to display
         print(f"Rotation: {r}, Translations: {t}")
-    
 
         message = str([r, t])
         client_socket.sendall(message.encode())
 
         data = client_socket.recv(1024)
         print(f"Server replies: {data.decode()}")
-        sleep(0.5)
-
+        sleep(2)
 
 
 def main(args=None):
