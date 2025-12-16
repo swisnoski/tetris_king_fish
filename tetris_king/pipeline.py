@@ -36,11 +36,10 @@ def loop():
             if current_piece is not None:
                 current_piece_list.append(current_piece)
                 game_state_current += game_state
-                sleep(0.1)
             if len(current_piece_list) == 3: 
                 current_piece = current_piece_list[-1]
-                game_state_current[game_state_current < 3] = 0
-                game_state_current[game_state_current > 3] = 2
+                game_state_current[game_state_current < 2] = 0
+                game_state_current[game_state_current > 2] = 2
                 game_state = game_state_current
                 select_piece_and_game = True
             # print(current_piece_list)
@@ -59,7 +58,6 @@ def loop():
 
         my_tetris.update_piece(current_piece)
         print(my_tetris.current_piece.type)
-        print(my_tetris.board)
         print(my_tetris.board[2:-1, 1:-1])
         r, t = find_best_move(my_tetris.board, my_tetris.current_piece.type)
         my_tetris.execute_moves(r, t) #update the board, no need to display
@@ -70,7 +68,7 @@ def loop():
 
         data = client_socket.recv(1024)
         print(f"Server replies: {data.decode()}")
-        sleep(2)
+        
 
 
 def main(args=None):
