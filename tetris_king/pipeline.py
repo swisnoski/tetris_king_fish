@@ -22,7 +22,7 @@ def loop():
             try:
                 np.testing.assert_array_equal(my_tetris.board[2:-1,1:-1], game_state)
             except: 
-                print("Discrepancy between CV detected board and internal board!")
+                # print("Discrepancy between CV detected board and internal board!")
                 # print(f"CV detected board:\n{game_state}")
                 # print(f"Internal board:\n{my_tetris.board[2:-1,1:-1]}")
                 my_tetris.board[2:-1,1:-1] = game_state
@@ -30,6 +30,8 @@ def loop():
             my_tetris.update_piece(current_piece)
             r, t = find_best_move(my_tetris.board, my_tetris.current_piece.type)
             my_tetris.execute_moves(r, t) #update the board, no need to display
+
+            input('yes')
             
 
 def main(args=None):
