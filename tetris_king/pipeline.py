@@ -18,6 +18,7 @@ def most_frequent(List):
 
 
 def cv_loop():
+    global r, t
     # Tetris pipeline
     my_tetris = Tetris_PIPE()
     cap = initialize_video_capture()
@@ -66,13 +67,16 @@ def cv_loop():
 
 
 def arm_loop(client_socket: socket.socket):
+    global r, t
     while True:
-        message = str([r, t])
-        client_socket.sendall(message.encode())
+        if r is not None and t is not None:
+            message = str([r, t])
+            print(message)
+            client_socket.sendall(message.encode())
 
-        data = client_socket.recv(1024)
-        print(f"Server replies: {data.decode()}")
-        sleep(0.5)
+            data = client_socket.recv(1024)
+            print(f"Server replies: {data.decode()}")
+            sleep(0.5)
 
 
 def loop():
@@ -84,11 +88,6 @@ def loop():
     print("Connected to server.")
 
     # Tetris pipeline
-    my_tetris = Tetris_PIPE()
-    cap = initialize_video_capture()
-    grid_pts = initialize_grid(cap)
-    last_list = []
-
     t1 = Thread(target=cv_loop)
     t2 = Thread(target=arm_loop, args=(client_socket,))
 
