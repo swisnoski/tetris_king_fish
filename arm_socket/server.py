@@ -28,11 +28,7 @@ action = {
     ],
     "left": [
         38.43664745258475,
-<<<<<<< HEAD
-        -60.79594585322086,
-=======
         -58.79594585322086,
->>>>>>> 4a2f7cebb8c8d8db51c767b27b8040b8aa532432
         -104,
         72.72079251924849,
         -1.1450604527398737e-05,
@@ -99,9 +95,9 @@ def home_thread(instr, mc2):
     while not processed:
         try:
             if instr == "right":
-                mc2.send_angles(action["home2"], 70)
+                mc2.send_angles(action["home2"], 100)
             else:
-                mc2.send_angles(action["home"], 70)
+                mc2.send_angles(action["home"], 100)
         except Exception:
             pass
         else:
