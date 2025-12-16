@@ -49,6 +49,14 @@ action = {
         0,
         0,
     ],
+    "home2": [
+        34.879476733238256,
+        -49.057293065782225,
+        -109.83631226701569,
+        68.89365481510154,
+        -2.5010854119063205e-05,
+        0,
+    ],
 }
 
 
@@ -68,7 +76,7 @@ def move_thread(instr, mc):
     print("thread 1 finished")
 
 
-def home_thread(mc2):
+def home_thread(instr, mc2):
     """
     Thread to check the status of arm
     """
@@ -77,7 +85,10 @@ def home_thread(mc2):
     processed = False
     while not processed:
         try:
-            mc2.send_angles(action["home"], 70)
+            if instr == "right":
+                mc2.send_angles(action["home2"], 70)
+            else:
+                mc2.send_angles(action["home"], 70)
         except Exception:
             pass
         else:
@@ -91,7 +102,7 @@ def move(instr, mc, mc2):
     """
     start = time.perf_counter()
     thread1 = threading.Thread(target=move_thread, args=(instr, mc))
-    thread2 = threading.Thread(target=home_thread, args=(mc2,))
+    thread2 = threading.Thread(target=home_thread, args=(instr, mc2))
 
     thread1.start()
     thread2.start()
@@ -150,10 +161,16 @@ def main():
             if rotations != 0:
                 for _ in range(int(rotations)):
                     move("rotate", mc, mc2)
+
+            if direction == "right":
+                mc.send_angles(action["home2"], 100)
             # Move
             if direction is not None:
                 for _ in range(int(abs(movement))):
                     move(direction, mc, mc2)
+
+            if direction == "right":
+                mc.send_angles(action["home"], 100)
 
             conn.sendall(("finished").encode())
 
