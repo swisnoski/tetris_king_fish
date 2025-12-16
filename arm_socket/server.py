@@ -163,11 +163,14 @@ def main():
                     move("rotate", mc, mc2)
 
             if direction == "right":
-                mc.send_angles(action["home2"])
+                mc.send_angles(action["home2"], 100)
             # Move
             if direction is not None:
                 for _ in range(int(abs(movement))):
                     move(direction, mc, mc2)
+
+            if direction == "right":
+                mc.send_angles(action["home"], 100)
 
             conn.sendall(("finished").encode())
 
