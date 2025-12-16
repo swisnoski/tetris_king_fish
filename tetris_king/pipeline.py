@@ -18,21 +18,21 @@ def loop():
                 game_state, current_piece = get_cv_info(cap, grid_pts)
                 if cv.waitKey(20) == ord('q'):
                     break
-    
+            print(f"{current_piece}")
             try:
                 np.testing.assert_array_equal(my_tetris.board[2:-1,1:-1], game_state)
             except: 
-                print("Discrepancy between CV detected board and internal board!")
-                print(f"CV detected board:\n{game_state}")
-                print(f"Internal board:\n{my_tetris.board[2:-1,1:-1]}")
+                # print("Discrepancy between CV detected board and internal board!")
+                # print(f"CV detected board:\n{game_state}")
+                # print(f"Internal board:\n{my_tetris.board[2:-1,1:-1]}")
                 my_tetris.board[2:-1,1:-1] = game_state
 
             my_tetris.update_piece(current_piece)
             r, t = find_best_move(my_tetris.board, my_tetris.current_piece.type)
             my_tetris.execute_moves(r, t) #update the board, no need to display
 
-
-            input('press enter')
+            input('yes')
+            
 
 def main(args=None):
     loop()

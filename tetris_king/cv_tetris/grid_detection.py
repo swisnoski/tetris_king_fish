@@ -11,7 +11,7 @@ import os
 from typing import Optional, List
 
 # Debug
-DEBUG_DISPLAY = True
+DEBUG_DISPLAY = False
 # ----------------------------
 
 def debug_show(title, img, pts=None):
