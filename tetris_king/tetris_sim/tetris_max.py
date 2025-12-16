@@ -1,4 +1,4 @@
-from tetris import Tetris, Piece, LOCATIONS
+from .tetris import Tetris, Piece, LOCATIONS
 import numpy as np
 import pygame
 import sys
@@ -19,13 +19,13 @@ class Tetris_MAX(Tetris):
     def __init__(self):
         super().__init__()
         self.last_move_time = 0
-        self.MOVETIME = 1
+        self.MOVETIME = 100
         self.iteration = 0
 
     def auto_loop(self):
         while True:
             self.spawn_piece()
-
+            print(self.board)
             r, t = find_best_move(self.board, self.current_piece.type)
 
             # print(t, r)
@@ -146,9 +146,10 @@ def find_best_move(board, piece_type):
     top_position = (0, 0)
 
     pos_rotations, pos_translations = POSSIBILITIES[piece_type]
-    print("here 1")
+    # print("here 1")
 
     for r in pos_rotations:
+        # print("running rot")
         # initialize the piece
         testing_piece = Piece(piece_type)
         # give it a spin
@@ -156,6 +157,7 @@ def find_best_move(board, piece_type):
 
         # give it a move
         for t in pos_translations:
+            # print("running t")
 
             # reset the locations
             testing_piece_x, testing_piece_y = LOCATIONS[piece_type]
@@ -198,7 +200,7 @@ def find_best_move(board, piece_type):
                 if run_score > top_score:
                     top_position = (r, t)
                     top_score = run_score
-    print("here 2")
+    # print("here 2")
 
     return top_position
 
