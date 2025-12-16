@@ -8,6 +8,7 @@ import threading
 HOST = "0.0.0.0"  # Listen on all interfaces
 PORT = 5000  # Arbitrary port >1024
 
+# Angles for each position
 action = {
     "rotate": [
         16.942364909303294,
@@ -70,7 +71,7 @@ action = {
 
 def move_thread(instr, mc):
     """
-    Thread to move arm
+    Thread to move arm to position
     """
     print("thread 1")
     processed = False
@@ -86,7 +87,7 @@ def move_thread(instr, mc):
 
 def home_thread(instr, mc2):
     """
-    Thread to check the status of arm
+    Thread to move arm back to home position.
     """
     time.sleep(0.1)
     print("thread 2")
@@ -106,7 +107,7 @@ def home_thread(instr, mc2):
 
 def move(instr, mc, mc2):
     """
-    Move arm based on instruction
+    Move arm sequence based on instruction
     """
     start = time.perf_counter()
     thread1 = threading.Thread(target=move_thread, args=(instr, mc))
@@ -126,12 +127,14 @@ def main():
     Starts a server and moves arm based on messages receieved through socket TCP
     """
 
+    # Connect to arm
     mc = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
     mc.set_fresh_mode(0)
     mc2 = MyCobot280("/dev/ttyAMA0", baudrate=1000000)
 
     mc.send_angles(action["home"], 30)
 
+    # Create socket server
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((HOST, PORT))
     server_socket.listen(1)
@@ -142,6 +145,7 @@ def main():
     print(f"Connected by {addr}")
 
     while True:
+        # Wait for message from client
         data = conn.recv(1024)
         if not data:
             break
@@ -153,6 +157,7 @@ def main():
 
         data = lst
 
+        # Decode message into rotations and movement
         rotations = data[0]
         movement = data[1]
 
@@ -180,10 +185,12 @@ def main():
             if direction == "right":
                 mc.send_angles(action["home"], 100)
 
-            conn.sendall(("finished").encode())
-
+            # Drop the tetris block
             mc.send_angles(action["home3"], 100)
             move("drop", mc, mc2)
+
+            # Tell client it is finished with moving
+            conn.sendall(("finished").encode())
 
     conn.close()
     server_socket.close()
