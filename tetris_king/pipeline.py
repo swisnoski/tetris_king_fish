@@ -32,6 +32,8 @@ def loop():
             my_tetris.execute_moves(r, t) #update the board, no need to display
 
             # input('yes')
+            if cv.waitKey(0) == ord('y'):
+                continue
             
 
 def main(args=None):
