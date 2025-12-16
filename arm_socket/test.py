@@ -20,6 +20,14 @@ action = {
         0,
         0,
     ],
+    "home2": [
+        34.879476733238256,
+        -49.057293065782225,
+        -109.83631226701569,
+        68.89365481510154,
+        -2.5010854119063205e-05,
+        0,
+    ],
 }
 
 
@@ -48,7 +56,7 @@ def home_thread(mc2):
     processed = False
     while not processed:
         try:
-            mc2.send_angles(action["home"], 70)
+            mc2.send_angles(action["home2"], 70)
         except Exception:
             pass
         else:
