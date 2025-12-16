@@ -165,27 +165,26 @@ def main():
             direction = "right"
 
         # Move arm based on instructions
-        if not mc.is_moving():
-            # Rotate
-            if rotations != 0:
-                for _ in range(int(rotations)):
-                    move("rotate", mc, mc2)
+        # Rotate
+        if rotations != 0:
+            for _ in range(int(rotations)):
+                move("rotate", mc, mc2)
 
-            if direction == "right":
-                mc.send_angles(action["home2"], 100)
-            elif direction == "left":
-                mc.send_angles(action["home4"], 100)
-            # Move
-            if direction is not None:
-                for _ in range(int(abs(movement))):
-                    move(direction, mc, mc2)
+        if direction == "right":
+            mc.send_angles(action["home2"], 100)
+        elif direction == "left":
+            mc.send_angles(action["home4"], 100)
+        # Move
+        if direction is not None:
+            for _ in range(int(abs(movement))):
+                move(direction, mc, mc2)
 
-            # Drop the tetris block
-            mc.send_angles(action["home3"], 100)
-            move("drop", mc, mc2)
+        # Drop the tetris block
+        mc.send_angles(action["home3"], 100)
+        move("drop", mc, mc2)
 
-            # Tell client it is finished with moving
-            conn.sendall(("finished").encode())
+        # Tell client it is finished with moving
+        conn.sendall(("finished").encode())
 
     conn.close()
     server_socket.close()
