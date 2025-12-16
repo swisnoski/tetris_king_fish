@@ -64,7 +64,7 @@ def home_thread(mc2):
     processed = False
     while not processed:
         try:
-            mc2.send_angles(action["home2"], 70)
+            mc2.send_angles(action["home3"], 70)
         except Exception:
             pass
         else:
