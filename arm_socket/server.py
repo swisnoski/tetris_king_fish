@@ -28,8 +28,8 @@ action = {
     ],
     "left": [
         38.43664745258475,
-        -58.79594585322086,
-        -103.92482271112029,
+        -60.79594585322086,
+        -104,
         72.72079251924849,
         -1.1450604527398737e-05,
         0,
@@ -37,7 +37,7 @@ action = {
     "right": [
         16.942364909303294,
         -61.42429237195168,
-        -110.60229048120522,
+        -107,
         82.02660179430062,
         -7.683645828234532e-06,
         0,
@@ -181,9 +181,6 @@ def main():
             if direction is not None:
                 for _ in range(int(abs(movement))):
                     move(direction, mc, mc2)
-
-            if direction == "right":
-                mc.send_angles(action["home"], 100)
 
             # Drop the tetris block
             mc.send_angles(action["home3"], 100)
