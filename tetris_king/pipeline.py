@@ -9,19 +9,15 @@ from tetris_sim.tetris_max import find_best_move
 from cv_tetris.cv_pipeline import initialize_video_capture, initialize_grid, get_cv_info
 import random
 
+r = None
+t = None
+
 
 def most_frequent(List):
     return max(set(List), key=List.count)
 
 
-def loop():
-    # Connect to server
-    SERVER_IP = "192.168.10.2"  # Change to server's IP
-    SERVER_PORT = 5000
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((SERVER_IP, SERVER_PORT))
-    print("Connected to server.")
-
+def cv_loop():
     # Tetris pipeline
     my_tetris = Tetris_PIPE()
     cap = initialize_video_capture()
@@ -68,11 +64,39 @@ def loop():
         my_tetris.execute_moves(r, t)  # update the board, no need to display
         print(f"Rotation: {r}, Translations: {t}")
 
+
+def arm_loop(client_socket: socket.socket):
+    while True:
         message = str([r, t])
         client_socket.sendall(message.encode())
 
-        # data = client_socket.recv(1024)
-        # print(f"Server replies: {data.decode()}")
+        data = client_socket.recv(1024)
+        print(f"Server replies: {data.decode()}")
+        sleep(0.5)
+
+
+def loop():
+    # Connect to server
+    SERVER_IP = "192.168.10.2"  # Change to server's IP
+    SERVER_PORT = 5000
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect((SERVER_IP, SERVER_PORT))
+    print("Connected to server.")
+
+    # Tetris pipeline
+    my_tetris = Tetris_PIPE()
+    cap = initialize_video_capture()
+    grid_pts = initialize_grid(cap)
+    last_list = []
+
+    t1 = Thread(target=cv_loop)
+    t2 = Thread(target=arm_loop, args=(client_socket,))
+
+    t1.start()
+    t2.start()
+
+    t1.join()
+    t2.join()
 
 
 def main(args=None):
