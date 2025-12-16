@@ -1,4 +1,4 @@
-from .tetris import Tetris, Piece, LOCATIONS
+from tetris import Tetris, Piece, LOCATIONS
 import numpy as np
 import pygame
 import sys
@@ -146,6 +146,7 @@ def find_best_move(board, piece_type):
     top_position = (0, 0)
 
     pos_rotations, pos_translations = POSSIBILITIES[piece_type]
+    print("here 1")
 
     for r in pos_rotations:
         # initialize the piece
@@ -197,6 +198,7 @@ def find_best_move(board, piece_type):
                 if run_score > top_score:
                     top_position = (r, t)
                     top_score = run_score
+    print("here 2")
 
     return top_position
 

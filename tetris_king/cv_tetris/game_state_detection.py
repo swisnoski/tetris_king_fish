@@ -198,13 +198,13 @@ def get_current_piece(img, coords_grid, game_state_grid):
             if i < 5:            
                 if cell == 1:
                     y, x = coords_grid[i][j]
-                    print(f"Checking pixel at row {i}, col={j}")
+                    # print(f"Checking pixel at row {i}, col={j}")
                     pixel = img[y, x]
                     hsv_pixel = cv.cvtColor(
                         np.uint8([[pixel]]),
                         cv.COLOR_BGR2HSV
                     )[0][0]
-                    print(f"color = {hsv_pixel}")
+                    # print(f"color = {hsv_pixel}")
                     # show_close("img", img)
                     # Check a small 3x3 area to see the actual colors
                     # region = img[y-1:y+2, x-1:x+2]
