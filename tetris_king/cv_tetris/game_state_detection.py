@@ -8,28 +8,28 @@ GRID_WIDTH = 10
 GRID_HEIGHT = 20
 
 HSV_COLOR_MAP = {
-    "I": [95, 200, 250], # light blue [95 144 252] [95 145 252] [97 145 251] [ 96 142 252] slight outlier: [ 90 122 254] [ 90 210 255] [ 90 217 255]
+    "I": [95, 250, 250], # light blue [95 144 252] [95 145 252] [97 145 251] [ 96 142 252] slight outlier: [ 90 122 254] [ 90 210 255] [ 90 217 255]
     "J": [110, 164, 248], # blue [111 177 247] [110 190 247] [109 158 248] [109 139 248]
     "L": [15, 155, 225], # orange [15 162 226] [14 150 224]
     "O": [35, 90, 245], # yellow [35, 88, 240] [35, 88, 240] [32, 98, 252] [32, 94, 255]
-    "S": [70, 200, 250], # green [70 138 214]; [ 74 228 255]
+    "S": [150, 255, 250], # green [70 138 214]; [ 74 228 255]
     "T": [134, 164, 248], # purple 19,0: [133 158 247] [135 134 248]; [139 183 255], [135, 151, 255], [132, 196, 255]
     "Z": [7, 178, 230], # red [6 174 231] [8 180 231]
 }
 
 HSV_ALL_PIECES = {
-    "I": [95, 200, 250], # light blue [95 144 252] [95 145 252] [97 145 251] [ 96 142 252] slight outlier: [ 90 122 254] [ 90 210 255] [ 90 217 255]
+    "I": [95, 250, 250], # light blue [95 144 252] [95 145 252] [97 145 251] [ 96 142 252] slight outlier: [ 90 122 254] [ 90 210 255] [ 90 217 255]
     "J": [110, 164, 248], # blue [111 177 247] [110 190 247] [109 158 248] [109 139 248]
     "L": [15, 155, 225], # orange [15 162 226] [14 150 224]
     "O": [35, 90, 245], # yellow [35, 88, 240] [35, 88, 240] [32, 98, 252] [32, 94, 255]
-    "S": [70, 200, 250], # green [70 138 214]; [ 74 228 255]
+    "S": [150, 255, 250], # green [70 138 214]; [ 74 228 255]
     "T": [134, 164, 248], # purple 19,0: [133 158 247] [135 134 248]; [139 183 255], [135, 151, 255], [132, 196, 255]
     "Z": [7, 178, 230], # red [6 174 231] [8 180 231]
     "GRAY": [96, 86, 255], # gray puyo block [95, 35, 100]
 }
 
 # Color tolerance (higher=easier match)
-COLOR_TOLERANCE = 50
+COLOR_TOLERANCE = 70
 
 def initalize_matrix_fill(img, grid_pts):
     """
@@ -90,6 +90,7 @@ def check_fill(img, check_grid):
     """
     # populate this grid to hold 0 and 1's, should have 200 (grid cell count)
     game_state_grid = [[0 for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
+    img_copy = img.copy()
 
     # iterate through the cetto check the game piece
     for i, row in enumerate(check_grid): # same size
@@ -106,15 +107,19 @@ def check_fill(img, check_grid):
                 game_state_grid[i][j] = 1
 
                 # verify visually with a green dot
-                cv.circle(img, (x, y), 5, (0, 255, 0), -1) 
+                cv.circle(img_copy, (x, y), 3, (0, 255, 255), -1) 
     
-    cv.namedWindow("Preview", cv.WINDOW_NORMAL)
-    show_close("Check Fill", img)
+    # cv.namedWindow("Preview", cv.WINDOW_NORMAL)
+    # show_close("Check Fill", img)
 
     # print(f"Game grid before scrubbing: {game_state_grid}")
 
+
+
     # implement scrubbing of current piece
     grid = copy.deepcopy(game_state_grid) # copy for checking
+    grid_p = copy.deepcopy(game_state_grid) # copy for checking
+
     def bfs(x_og, y_og):
         """
         A helper function that runs BFS to find floating island, that's not connected to bottom row
@@ -172,14 +177,14 @@ def check_fill(img, check_grid):
                         game_state_grid[x][y] = 0
                         # TESTING: visually draw to be blue if floating
                         draw_y, draw_x = check_grid[x][y]
-                        cv.circle(img, (draw_x, draw_y), 5, (255, 0, 0), -1) 
+                        cv.circle(img_copy, (draw_x, draw_y), 5, (255, 0, 0), -1) 
             else:
                 continue
 
-    show_close("Check Scrub Current Piece", img)
+    show_close("Check Scrub Current Piece", img_copy)
 
     # print(f"Game state after scrub: {game_state_grid}")
-    return game_state_grid
+    return game_state_grid, grid_p
 
 def get_current_piece(img, coords_grid, game_state_grid):
     """
@@ -187,14 +192,21 @@ def get_current_piece(img, coords_grid, game_state_grid):
     """
     # heuristic checking top of screen with 2 block gap
     current_piece = None
+    # print(coords_grid)
     for i, row in enumerate(game_state_grid):
         for j, cell in enumerate(row):
-            if i < 3:            
+            if i < 5:            
                 if cell == 1:
-                    pixel = img[coords_grid[i][j]]
-                    # print(f'pixel = {pixel}')
+                    x, y = coords_grid[i][j]
+                    # print(f"Checking pixel at x={x}, y={y}")
+                    pixel = img[y, x]
+                    # print(f"pixel = {pixel}")
+                    # show_close("img", img)
+                    # Check a small 3x3 area to see the actual colors
+                    # region = img[y-1:y+2, x-1:x+2]
+                    # print("Region:\n", region)
                     current_piece = classify_cell_color(pixel, HSV_COLOR_MAP)
-                    print(current_piece)
+                    # print(current_piece)
 
     # return current_piece (either None is no detection, or classified)
     return current_piece
@@ -218,7 +230,7 @@ def classify_cell_color(bgr_color, color_map) -> str:
     for name, hsv_ref in color_map.items():
         hsv_ref = np.array(hsv_ref)
 
-        print(f'pixel hsv: {hsv_pixel}, {name} hsv: {hsv_ref}')
+        # print(f'pixel hsv: {hsv_pixel}, {name} hsv: {hsv_ref}')
         distance = hsv_distance(hsv_pixel, hsv_ref)
 
         if distance < min_distance:
@@ -261,8 +273,8 @@ def main(args=None):
     # Load, run detect once.
     frame_to_process = cv.imread(img_path)
     if frame_to_process is not None:
-        print(f"Successfully loaded image: {img_path}. Running detection...")
-        show_close("Show Plain image", frame_to_process)
+        # print(f"Successfully loaded image: {img_path}. Running detection...")
+        # show_close("Show Plain image", frame_to_process)
         # grid_pts = [(420, 250), (1000, 250), (1000, 1400), (420, 1400)] # dummy for start_tetris_cleaned.jpeg
         # grid_pts = [(255, 150), (810, 150), (810, 1290), (255, 1290)] # dummy for tetris_screen_clean.jpeg
         grid_pts = [(240, 150), (800, 150), (800, 1280), (255, 1280)] # dummy for tetris_current_purple.jpeg

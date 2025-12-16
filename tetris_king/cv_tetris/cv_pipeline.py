@@ -97,11 +97,12 @@ def get_cv_info(cap, grid_pts):
     ret, img = video_to_frame(cap) 
     if ret:
         # detect filled cells
-        game_state = game_state_detection.check_fill(img, grid_pts)
+        game_state, game_state_p = game_state_detection.check_fill(img, grid_pts)
         # get current piece
-        current_piece = game_state_detection.get_current_piece(img, grid_pts, game_state)
+        current_piece = game_state_detection.get_current_piece(img, grid_pts, game_state_p)
+        # print(f"current p: {current_piece}")
         # print(current_piece)
-        print(f'Final game state and current piece: {game_state, current_piece}')
+        # print(f'Final game state and current piece: {game_state, current_piece}')
         return game_state, current_piece
     else:
         print("Error: Could not read a frame from the sequence.")
@@ -132,7 +133,7 @@ def process_image(img):
     """
     Helper function for all things just needing an img, with game_state and fill detection
     """
-    print("Got frame")
+    # print("Got frame")
     # get grid_pts
     grid_img = img.copy()
     grid_pts = initialize_grid(grid_img)
