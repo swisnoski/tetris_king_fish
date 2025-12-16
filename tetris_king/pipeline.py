@@ -19,10 +19,16 @@ def loop():
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect((SERVER_IP, SERVER_PORT))
     print("Connected to server.")
+<<<<<<< HEAD
+=======
+
+    # Tetris pipeline
+>>>>>>> 97f25cb25b0d2a530f09e9837bef6f89e188caac
     my_tetris = Tetris_PIPE()
     cap = initialize_video_capture()
     grid_pts = initialize_grid(cap)
     while True:
+<<<<<<< HEAD
         current_piece_list = []
         select_piece_and_game = False
         current_piece = None
@@ -52,6 +58,36 @@ def loop():
             # print(f"Internal board:\n{my_tetris.board[2:-1,1:-1]}")
             my_tetris.board[2:-1,1:-1] = game_state
             
+=======
+        current_piece = None
+        while current_piece is None:
+            game_state, current_piece = get_cv_info(cap, grid_pts)
+            if cv.waitKey(5) == ord("q"):
+                break
+        print(f"{current_piece}")
+        try:
+            np.testing.assert_array_equal(my_tetris.board[2:-1, 1:-1], game_state)
+        except:
+            # print("Discrepancy between CV detected board and internal board!")
+            # print(f"CV detected board:\n{game_state}")
+            # print(f"Internal board:\n{my_tetris.board[2:-1,1:-1]}")
+            my_tetris.board[2:-1, 1:-1] = game_state
+
+        my_tetris.update_piece(current_piece)
+        r, t = find_best_move(my_tetris.board, my_tetris.current_piece.type)
+        my_tetris.execute_moves(r, t)  # update the board, no need to display
+
+        message = str([r, t])
+        client_socket.sendall(message.encode())
+
+        data = client_socket.recv(1024)
+        print(f"Server replies: {data.decode()}")
+
+        # input('yes')
+        # if cv.waitKey(0) == ord('y'):
+        #     continue
+
+>>>>>>> 97f25cb25b0d2a530f09e9837bef6f89e188caac
 
         my_tetris.update_piece(current_piece)
         print(my_tetris.current_piece.type)
