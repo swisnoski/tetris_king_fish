@@ -16,7 +16,7 @@ def loop():
             current_piece = None
             while current_piece is None:
                 game_state, current_piece = get_cv_info(cap, grid_pts)
-                if cv.waitKey(20) == ord('q'):
+                if cv.waitKey(5) == ord('q'):
                     break
             print(f"{current_piece}")
             try:
@@ -31,7 +31,7 @@ def loop():
             r, t = find_best_move(my_tetris.board, my_tetris.current_piece.type)
             my_tetris.execute_moves(r, t) #update the board, no need to display
 
-            input('yes')
+            # input('yes')
             
 
 def main(args=None):
