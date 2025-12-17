@@ -68,6 +68,7 @@ class Piece:
 
 class Tetris:
     def __init__(self):
+        # initalize our class and all our variables
         pygame.init()
 
         self.WIDTH = 10
@@ -76,11 +77,13 @@ class Tetris:
         self.FPS = 20
         self.DROPTIME = 500  # milliseconds
 
+        # initialize colors for visualizer 
         self.RED = (255, 0, 0)
         self.BLUE = (0, 0, 255)
         self.BLACK = (0, 0, 0)
         self.WHITE = (255, 255, 255)
 
+        # make a screen where we can display things 
         self.screen = pygame.display.set_mode(
             (self.WIDTH * self.CELL_SIZE, (self.HEIGHT + 2) * self.CELL_SIZE)
         )
@@ -96,7 +99,7 @@ class Tetris:
         self.piece_y = 0
         self.lines_cleared = 0
 
-
+        # random next three pieces (for now)
         self.next_pieces = [
             random.choice(PIECE_LIST),
             random.choice(PIECE_LIST),
@@ -113,6 +116,13 @@ class Tetris:
 
 
     def spawn_piece(self):
+        '''
+        function to create a new piece and update our class variables 
+        updates self.current piece based on our peice list, and then 
+        updates the piece list 
+
+        updates the x and y location of the piece based on the spawning locations
+        '''
         # create a new piece
         next_piece = self.next_pieces[0]
         self.current_piece = Piece(next_piece)
@@ -126,6 +136,14 @@ class Tetris:
         self.next_pieces[2] = random.choice(PIECE_LIST)
 
     def detect_collision(self, offset_x=0, offset_y=0):
+        '''
+        function to detect a collision between the current piece and 
+        the board state. if it detections a collision between a currently placed
+        piece, the wall, or the floor, it returns TRUE
+
+        it can also take in an offset (as integers), which is needed as you move the 
+        peice in one direction or the other 
+        '''
         for i in range(self.current_piece.height):
             for j in range(self.current_piece.width):
                 if self.current_piece.blocks[i][j] == 1:
@@ -136,6 +154,12 @@ class Tetris:
         return False
 
     def check_and_clear_tetris(self):
+        '''
+        checks the full board and removes any lines that need to be cleared, 
+        then moves down the boxes above them
+
+        this should be called after placing a peice 
+        '''
         # let's find full rows
         tetris_rows = []
         for row in range(2, self.HEIGHT + 2):
@@ -149,6 +173,16 @@ class Tetris:
             self.board[2, 1:-1] = 0
 
     def handle_inputs(self):
+        '''
+        this version of tetris needs to handle user inputs. we have a keylister that checks 
+        if the user presses any keys, then appends them to a list (self.key_inputs). This 
+        function checks the list and performs the needed action before removing the key from the list
+
+        possible actions: 
+        a -> move left 
+        d -> move right 
+        r -> rotate clockwise 
+        '''
         if "a" in self.key_inputs:
             if not self.detect_collision(offset_x=-1):
                 self.piece_x -= 1
@@ -172,6 +206,10 @@ class Tetris:
             self.key_inputs.remove("r")
 
     def clear_piece(self):
+        '''
+        a simple function that removes the current piece from the board matrix 
+        by turning the values of the current piece (represented by 1s) to 0s
+        '''
         # clear current piece from board
         for row in range(self.HEIGHT + 3):
             for cell in range(self.WIDTH + 2):
@@ -179,6 +217,11 @@ class Tetris:
                     self.board[row][cell] = 0
 
     def place_piece(self):
+        '''
+        this function places the piece on the board at its current location
+        working in conjunction with the clear_piece and handle_inputs function to move the 
+        piece on the board. 
+        '''
         # place current piece on board
         for i in range(self.current_piece.height):
             for j in range(self.current_piece.width):
@@ -186,6 +229,16 @@ class Tetris:
                     self.board[self.piece_y + i][self.piece_x + j] = 1
 
     def update_board(self):
+        '''
+        this is the function to update the board each timestep.
+        it checks for user input and checks if the piece should be moved, 
+        then updates accordingly. 
+
+        if the piece collides with the ground or another piece when moving down, 
+        it sets it in place and checks for tetrises 
+
+        if there isn't a current piece, then it spawns a new one
+        '''
         # spawn piece if needed
         if self.current_piece is None:
             self.spawn_piece()
@@ -216,6 +269,14 @@ class Tetris:
         self.clock.tick(self.FPS)
 
     def update_screen(self):
+        '''
+        function to display the board 
+        basically, iterates through each cell in the board and 
+        colors it either black (background), blue (placed blocks),
+        or red (current piece)
+
+        it also renders the next three blocks as their respective letters 
+        '''
         for row in range(self.HEIGHT + 3):
             for cell in range(self.WIDTH + 2):
                 if self.board[row][cell] == 0:
@@ -272,6 +333,12 @@ class Tetris:
         pygame.display.flip()
 
     def key_listener(self):
+        '''
+        pygame keylister that checks for user input and updates the 
+        self.key_inputs list 
+
+        also checks if the user quits 
+        '''
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -283,6 +350,11 @@ class Tetris:
                 # print(f"Key pressed: {event.key}")
 
     def check_loss(self):
+        '''
+        checks if a peice has been placed above the board (in row 1)
+        if a piece has been places that high, then the game is over 
+        and this function returns True
+        '''
         for cell in self.board[1]:
             if cell == 2:
                 # print("Game Over!")
@@ -292,6 +364,15 @@ class Tetris:
         return False
 
     def loop(self):
+        '''
+        a loop which iterates through the different steps 
+        first, we check for input with self.key_listener 
+        next, we update the board based on the input    
+            updating the board also checks for tetrises and iterates to 
+            the next piece 
+        next, we update the screen
+        lastly, we check if we've lost 
+        '''
         while True:
             self.key_listener()
             self.update_board()
@@ -300,11 +381,16 @@ class Tetris:
 
 
 def main(args=None):
+    '''
+    main functions which initialized an instance of the tetris class 
+    and loops it 
+    '''
     my_tetris = Tetris()
     my_tetris.loop()
 
 if __name__ == "__main__":
     main()
+
 
 
 
