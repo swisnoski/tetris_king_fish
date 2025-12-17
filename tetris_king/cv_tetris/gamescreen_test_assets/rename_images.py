@@ -2,7 +2,7 @@
 
 import os
 
-directory_path = "./assets/" 
+directory_path = "./" 
 
 def rename_images():
     try:
