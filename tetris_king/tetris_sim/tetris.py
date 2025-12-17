@@ -1,17 +1,15 @@
 ## okay so let's code some TETRIS FROM SCRATCH WOOOO
 
+'''
+create a fully playable tetris class that can be inherited and edited in other files
+'''
+
 import numpy as np
 import sys
 import random
 import pygame
 import pygame.freetype
 
-# let's start with a board.
-
-
-# so we specifiy position like board[y][x], where (0,0) is top left
-
-# and also let's just do some pieces
 
 I = np.array(
     [[0, 0, 0, 0], [1, 1, 1, 1],  [0, 0, 0, 0], [0, 0, 0, 0]]
@@ -390,6 +388,7 @@ def main(args=None):
 
 if __name__ == "__main__":
     main()
+
 
 
 
