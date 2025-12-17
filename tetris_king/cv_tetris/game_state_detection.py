@@ -2,36 +2,37 @@ import cv2 as cv
 import numpy as np
 from typing import Optional, List, Dict, Tuple
 import copy
+import sys
 
-# --- Grid constants ---
+# Grid constants
 GRID_WIDTH = 10
 GRID_HEIGHT = 20
 
-# light blue [ 98 191 255] [ 90 210 255]
-# green [ 74 220 255] [74 246 255] [ 73 242 255]
-HSV_COLOR_MAP = {
-    "I": [95, 160, 250], # light blue [97, 130, 255]; [95 144 252] [95 145 252] [97 145 251] [ 96 142 252] slight outlier: [ 90 122 254] [ 90 210 255] [ 90 217 255]
-    "J": [110, 164, 248], # blue [111 177 247] [110 190 247] [109 158 248] [109 139 248]
-    "L": [15, 217, 240], # orange [14, 210, 248]; [15 162 226] [14 150 224]
-    "O": [26, 155, 245], # yellow NEW [26, 155, 240];[35, 88, 240] [35, 88, 240] [32, 98, 252] [32, 94, 255]
-    "S": [72, 140, 250], # green [70 138 214]; [ 74 228 255]
-    "T": [134, 164, 248], # purple 19,0: [133 158 247] [135 134 248]; [139 183 255], [135, 151, 255], [132, 196, 255]
-    "Z": [7, 178, 230], # red [6 174 231] [8 180 231]
-}
-
-HSV_ALL_PIECES = {
-    "I": [95, 130, 250], # light blue [95 144 252] [95 145 252] [97 145 251] [ 96 142 252] slight outlier: [ 90 122 254] [ 90 210 255] [ 90 217 255]
-    "J": [110, 164, 248], # blue [111 177 247] [110 190 247] [109 158 248] [109 139 248]
-    "L": [15, 155, 225], # orange [15 162 226] [14 150 224]
-    "O": [26, 155, 245], # yellow [35, 88, 240] [35, 88, 240] [32, 98, 252] [32, 94, 255]
-    "S": [72, 140, 250], # green [70 138 214]; [ 74 228 255]
-    "T": [134, 164, 248], # purple 19,0: [133 158 247] [135 134 248]; [139 183 255], [135, 151, 255], [132, 196, 255]
-    "Z": [7, 178, 230], # red [6 174 231] [8 180 231]
-    "GRAY": [96, 86, 255], # gray puyo block [95, 35, 100]
-}
-
-# Color tolerance (higher=easier match)
+# HSV distance tolerance constant
 COLOR_TOLERANCE = 70
+
+# HSV reference dict for current piece detection, based on exact camera conditions
+HSV_COLOR_MAP = {
+    "I": [95, 160, 250], # light blue 
+    "J": [110, 164, 248], # blue 
+    "L": [15, 217, 240], # orange 
+    "O": [26, 155, 245], # yellow 
+    "S": [72, 140, 250], # green 
+    "T": [134, 164, 248], # purple 
+    "Z": [7, 178, 230], # red 
+}
+
+# color map dict for checking fill, based on exact camera conditions
+HSV_ALL_PIECES = {
+    "I": [95, 130, 250], # light blue 
+    "J": [110, 164, 248], # blue 
+    "L": [15, 155, 225], # orange 
+    "O": [26, 155, 245], # yellow
+    "S": [72, 140, 250], # green 
+    "T": [134, 164, 248], # purple
+    "Z": [7, 178, 230], # red 
+    "GRAY": [96, 86, 255], # gray filled block 
+}
 
 def initalize_matrix_fill(img, grid_pts):
     """
@@ -82,7 +83,7 @@ def initalize_matrix_fill(img, grid_pts):
 
 def check_fill(img, check_grid):
     """
-    Checks the color of each grid cell by pixel coordinate to see if filled
+    Checks the color of each grid cell by pixel coordinate to see if filled.
 
     Args:
     - check_grid: a 2D array of tuples, representing the coordinate pixel points of the center of each grid cell
@@ -111,60 +112,19 @@ def check_fill(img, check_grid):
                 # verify visually with a green dot
                 cv.circle(img_copy, (x, y), 3, (0, 255, 255), -1) 
     
-    # cv.namedWindow("Preview", cv.WINDOW_NORMAL)
     # show_close("Check Fill", img)
 
     # print(f"Game grid before scrubbing: {game_state_grid}")
     # implement scrubbing of current piece
     grid = copy.deepcopy(game_state_grid) # copy for checking
-    grid_p = copy.deepcopy(game_state_grid) # copy for checking
+    grid_p = copy.deepcopy(game_state_grid) # unscrubbed copy 
 
-    def bfs(x_og, y_og):
-        """
-        A helper function that runs BFS to find floating island, that's not connected to bottom row
-
-        Args:
-            x_og: an int representing the starting x coordinate of island
-            y_og: an int representing the starting y coordinate of island
-        """
-        queue = [(x_og, y_og)]
-        visited = []
-
-        curr_coords = []
-        bottom = False
-
-        while queue:
-            node = queue.pop(0) # tuple of x, y coords (but swapped in actuality to our usual reference)
-
-            if node not in visited:
-                visited.append(node)
-                x, y = node
-                curr_coords.append((x,y)) # append to tentative current piece coordinate list
-                if x == 19:
-                    bottom = True # catch starting block
-                grid[x][y] = 0 # set land to checked (by switching to water)
-
-                # check each of 4 directions + the 4 adjacent cornerss
-                for dx, dy in [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x - 1, y -1), (x - 1, y+1), (x+1, y+1), (x+1, y-1)]:
-                    # check in bounds
-                    if 0 <= dx < len(grid) and 0 <= dy < len(row):
-                        # print(f"coordinate to check: {dy, dx}") # flipped for our usual reference
-                        if grid[dx][dy] == 1: # if floating island
-                            queue.append((dx, dy))
-                            curr_coords.append((dx,dy)) # append to tentative current piece coordinate list
-                            if dx == 19:  # if connected to bottom flag of connected switch on
-                                bottom = True
-        if bottom is False: # if not touching bottom (floating island) --> return
-            return curr_coords
-        else:
-            return None      
-    
     # flip matrix entries to 0 if current piece
     for i, row in enumerate(grid): 
         for j, cell in enumerate(row):
             if cell == 1: # if land
                 # print(f'RIGGHT BEFORE BFS: {game_state_grid}')
-                curr_coords = bfs(i, j)
+                curr_coords = bfs(i, j, grid)
                 # print(f'RIGGHT AFTER BFS: {game_state_grid}')
                 if curr_coords is not None: # if have detected current piece --> SCRUB
                     # print("Detected floating island of current piece!")
@@ -187,9 +147,9 @@ def check_fill(img, check_grid):
 
 def get_current_piece(img, coords_grid, game_state_grid):
     """
-    Detect and return what the current piece is
+    Detect and return what the current piece is.
     """
-    # heuristic checking top of screen with 2 block gap
+    # heuristic checking top 3 rows of screen for fill
     current_piece = None
     # print(coords_grid)
     for i, row in enumerate(game_state_grid):
@@ -199,15 +159,11 @@ def get_current_piece(img, coords_grid, game_state_grid):
                     y, x = coords_grid[i][j]
                     # print(f"Checking pixel at row {i}, col={j}")
                     pixel = img[y, x]
-                    hsv_pixel = cv.cvtColor(
-                        np.uint8([[pixel]]),
-                        cv.COLOR_BGR2HSV
-                    )[0][0]
+                    # hsv_pixel = cv.cvtColor(
+                    #     np.uint8([[pixel]]),
+                    #     cv.COLOR_BGR2HSV
+                    # )[0][0]
                     # print(f"color = {hsv_pixel}")
-                    # show_close("img", img)
-                    # Check a small 3x3 area to see the actual colors
-                    # region = img[y-1:y+2, x-1:x+2]
-                    # print("Region:\n", region)
                     current_piece = classify_cell_color(pixel, HSV_COLOR_MAP)
                     # print(current_piece)
 
@@ -247,17 +203,63 @@ def classify_cell_color(bgr_color, color_map) -> str:
         return closest_name
     else:
         return None
+    
+def bfs(x_og, y_og, grid):
+    """
+    A helper function that runs BFS to find floating island, that's not connected to bottom row.
 
-def hsv_distance(hsv1, hsv2, wH=8, wS=1, wV=1):
+    Args:
+        x_og: an int representing the starting x coordinate of island
+        y_og: an int representing the starting y coordinate of island
+
+    Returns:
+        coordinates representing
+    """
+    queue = [(x_og, y_og)]
+    visited = []
+
+    curr_coords = []
+    bottom = False
+
+    while queue:
+        node = queue.pop(0) # tuple of x, y coords (but swapped in actuality to our usual reference)
+
+        if node not in visited:
+            visited.append(node)
+            x, y = node
+            curr_coords.append((x,y)) # append to tentative current piece coordinate list
+            if x == 19:
+                bottom = True # catch starting block
+            grid[x][y] = 0 # set land to checked (by switching to water)
+
+            # check each of 4 directions + the 4 adjacent cornerss
+            for dx, dy in [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x - 1, y -1), (x - 1, y+1), (x+1, y+1), (x+1, y-1)]:
+                # check in bounds
+                if 0 <= dx < GRID_HEIGHT and 0 <= dy < GRID_WIDTH:
+                    # print(f"coordinate to check: {dy, dx}") # flipped for our usual reference
+                    if grid[dx][dy] == 1: # if floating island
+                        queue.append((dx, dy))
+                        curr_coords.append((dx,dy)) # append to tentative current piece coordinate list
+                        if dx == 19:  # if connected to bottom flag of connected switch on
+                            bottom = True
+    if bottom is False: # if not touching bottom (floating island) --> return
+        return curr_coords
+    else:
+        return None  
+
+def hsv_distance(hsv1, hsv2, wH=8, wV=1):
+    """
+    Helper function to calculate distance between two pixel's HSV values, excluding Saturdation,
+    with weights given to Hue and Value.
+    """
     dh = min(abs(hsv1[0] - hsv2[0]), 180 - abs(hsv1[0] - hsv2[0]))  # hue wrap-around
     ds = hsv1[1] - hsv2[1]
     dv = hsv1[2] - hsv2[2]
     return wH * dh * dh + wV * dv * dv
-    return wH * dh * dh + wS * ds * ds + wV * dv * dv
 
 def show_close(caption, img):
     """
-    Helper function to simplify repeated showing and closing of cv windows
+    Helper function to simplify repeated showing and closing of cv windows.
 
     caption: a string for the img caption
     img: CV image to show
@@ -265,14 +267,15 @@ def show_close(caption, img):
     # handle showing and close operations
     cv.imshow(caption, img) # overwrites previous img of same name if exists
     if cv.getWindowProperty(caption, cv.WND_PROP_VISIBLE) < 1:
-        import sys
         cv.destroyAllWindows()
         sys.exit(0)
 
 def main(args=None):
+    """
+    Mock pipeline to test game state detection sequence.
+    """
     # CHANGE THIS PATH to the location of your Tetris game screen
-    img_path = "./assets/tetris_current_purple.jpeg" # dummy image path for now
-    # img_path = "./assets/tetris_screen_cleaned.jpeg"
+    img_path = "./assets/tetris_current_purple.jpeg" # dummy image path
 
     # Load, run detect once.
     frame_to_process = cv.imread(img_path)

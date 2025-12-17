@@ -1,12 +1,10 @@
 from . import game_state_detection
 from . import grid_detection
-# import game_state_detection
-# import grid_detection
 import cv2 as cv 
 
 def initialize_video_capture():
     """
-    Returns cv VideoCapture object, None is video source failed
+    Returns cv VideoCapture object, None is video source failed.
     """
     # feed in video 
     cap = cv.VideoCapture(0)
@@ -17,7 +15,6 @@ def initialize_video_capture():
     if not cap.isOpened():
         print("Error: Could not open video source.")
         return None
-        # exit()
     else:
         print("Video capture opened successfully")
     
@@ -25,12 +22,12 @@ def initialize_video_capture():
 
 def video_to_frame(cap):
     """
-    Helper function to return cv img frame to read from
+    Helper function to return cv img frame to read from.
 
     frame: img numpy frame
     """
-    # UNCOMMENT FOR RECORDED VID TESTING ONLY: skips to go 5 frames at a time
-    # for _ in range(20):
+    # UNCOMMENT FOR RECORDED VID TESTING ONLY: skips to go 10 frames at a time
+    # for _ in range(10):
     #     cap.grab()   # fast skip
 
     # read frame
@@ -46,7 +43,9 @@ def video_to_frame(cap):
     
 def initialize_grid(cap):
     """
-    Initialize grid corners and cells coordinates, waits for approval of user hitting 'g'
+    Initialize grid corners and cells coordinates, waits for approval of user hitting 'g'.
+
+    Returns list of tuples representing four detected gameplay grid corners
     """
     corner_pts = None
     grid_pts = None
@@ -71,7 +70,7 @@ def initialize_grid(cap):
         grid_pts = game_state_detection.initalize_matrix_fill(grid_img, corner_pts)
 
         # visualize grid initalization
-        cv.putText(grid_img, "Press g if ready, any other key to re-try grid search", (20, 50), cv.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 4)
+        cv.putText(grid_img, "Press g if ready, any other key to re-try grid search", (27, 26), cv.FONT_HERSHEY_SIMPLEX, 0.75, (50, 50, 50), 2)
         cv.imshow('Grid Initialization', grid_img)
         if cv.waitKey(0) == ord('g'):
             grid_ready = True
@@ -85,7 +84,7 @@ def initialize_grid(cap):
     
 def get_cv_info(cap, grid_pts):
     """
-    Function called by game super loop that returns game_state matrix and current_piece
+    Function called by game super loop that returns game_state matrix and current_piece.
 
     Args:
     - cap: CV VideoCapture object
@@ -114,9 +113,10 @@ def get_cv_info(cap, grid_pts):
     
 def get_grid(img):
     """
-    Helper function 
+    Helper function to just get the initialized grid, using manual grid corners.
+
     Args:
-    - img: opencv img numpy obj ect 
+    - img: opencv img numpy object 
     """
     pts = None
     # while pts is None:
@@ -133,7 +133,7 @@ def get_grid(img):
 
 def process_image(img):
     """
-    Helper function for all things just needing an img, with game_state and fill detection
+    Helper function for all things just needing an img, with game_state and fill detection.
     """
     # print("Got frame")
     # get grid_pts
@@ -149,7 +149,7 @@ def process_image(img):
 
 def test_frame():
     """
-    Mock game system pipeline with image path, abstracting away model + arm.
+    Mock game system cv pipeline with image path, abstracting away model + arm.
     """
     img_path = "./assets/tetris_final.png" # test image path
 
@@ -161,6 +161,9 @@ def test_frame():
     return game_state, current_piece
 
 def test_video_once():
+    """
+    Mock game system cv pipeline testing to just get first frame from video feed.
+    """
     cap = initialize_video_capture()
     game_state, current_piece = get_cv_info(cap)
 
