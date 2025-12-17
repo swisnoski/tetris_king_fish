@@ -2,6 +2,17 @@ from .tetris import Tetris, Piece, LOCATIONS
 import numpy as np
 import random
 
+'''
+this file defines the tetris_rl class, building off our original tetris class.
+it allows us to create a tetris board and play tetris via a number of "steps" 
+fed into an RL model. We feed in the current game state and a list of possible actions, 
+then it returns one of those actions and we implement it and return the new game state as 
+well as score that action. 
+
+also added a reset function to allow the same class to be reused, and removed all pygame functionality 
+to reduce computational load 
+'''
+
 POSSIBILITIES = {
     "I": (range(2), range(-4, 6, 1)),
     "T": (range(4), range(-4, 5, 1)),
@@ -27,6 +38,11 @@ PIECE_ENCODING = {
 
 class Tetris_RL(Tetris):
     def __init__(self):
+        '''
+        initialize our basic class variables. 
+        we redefine them here in order to remove pygame functionality, 
+        since the original tetris would unessecarily create a screen
+        '''
         # super().__init__()
         self.lines_cleared = 0
         self.iteration = 0
@@ -62,6 +78,11 @@ class Tetris_RL(Tetris):
 
 
     def initialize(self):
+        ''' 
+        this function initialized the beginning of a tetris game, 
+        informing the rl model of a blank state and the valid moves for 
+        our very first piece 
+        '''
         self.spawn_piece()
         # print(self.current_piece.type)
         valid_moves = find_legal_moves(self.board, self.current_piece.type)
@@ -70,6 +91,10 @@ class Tetris_RL(Tetris):
 
 
     def reset(self):
+        '''
+        this function is used to reset the board/game after we complete a round, 
+        it clears the board, sets the current piece to none, and lines cleared/current interation to 0
+        '''
         self.board = np.zeros((self.HEIGHT + 3, self.WIDTH + 2))
         self.board[-1, :] = 2
         self.board[:, 0] = 5
@@ -81,7 +106,17 @@ class Tetris_RL(Tetris):
 
 
     def step(self, action):
+        '''
+        this is the step function, the crux of our interaction with the rl model 
+        each step, we are given an action by the model. The action is an interger 
+        between 1 and 44 which we decode into a number of rotations and translations 
 
+        we then perform the action, and spawn the next piece.
+        
+        with this, we can find the new state, our reward, the iteration,
+        and the number of valid moves for the next piece, and return that informatin
+        to the RL model so it can learn and make it's next move 
+        '''
         current_score = score_board(self.board)
 
         r = (action - 1) // 11
@@ -115,6 +150,14 @@ class Tetris_RL(Tetris):
         return next_state, reward, done, self.iteration, valid_moves
 
     def execute_moves(self, r, t):
+         '''
+        given a rotation (int between 0 and 3) and a 
+        translation (int between -5 and 5), we rotate and 
+        move our current piece accordingly. Once above it's desired spot, we 
+        then drop it down. Each of these actions is contingent on the timer 
+
+        this function also places the block and checks for tetrises
+        '''
 
         self.current_piece.rotate(n_rotations=r)
         self.piece_x += t
@@ -137,7 +180,12 @@ class Tetris_RL(Tetris):
             else:
                 self.piece_y += 1
 
+
     def state_returner(self):
+        '''
+        since our model needs information in a specific way, this model encodes the board 
+        and current piece as a single state 
+        '''
         column_counts = []
         for col in range(1, 11):
             count = np.sum(self.board[:, col] == 2) - 1
@@ -149,6 +197,18 @@ class Tetris_RL(Tetris):
 
 
 def detect_collision_normal(board, piece, x, y):
+    ''' 
+    function to detect a collision between the current piece and 
+    the board state. if it detections a collision between a currently placed
+    piece, the wall, or the floor, it returns TRUE
+
+    it can also take in an offset (as integers), which is needed as you move the 
+    peice in one direction or the other 
+        
+    basically a copy of the class function defined in tetris.py 
+
+    however, it can be used outside of the class 
+    '''
     for i in range(piece.height):
         for j in range(piece.width):
             if piece.blocks[i][j] == 1:
@@ -158,6 +218,22 @@ def detect_collision_normal(board, piece, x, y):
 
 
 def score_board(board, HEIGHT=20, WIDTH=10):
+    '''
+    takes in a tetris board (numpy array and returns a score 
+    it scores the board based on four variables: 
+    1. number of holes
+    2. bumpiness of the surface 
+    3. how high the blocks have gotten 
+    4. if placing the block creates a tetris (or tetrises) 
+
+    each of these has a designated weight as shown below: 
+    score = (
+        (total_height * -0.510066)
+        + (lines_cleared * 0.760666)
+        + (holes * -0.35663)
+        + (bumpiness * -0.184483)
+    )
+    '''
     holes = 0
     hole_detector = False
     col_heights = []
@@ -205,6 +281,12 @@ def score_board(board, HEIGHT=20, WIDTH=10):
 
 
 def find_legal_moves(board, piece_type):
+    '''
+    takes in a board (numpy array) and piece type (string single letter representing a tetris piece) 
+    in order to properly play tetris, the model needs to know what moves it can choose from
+    this iterates through all possible moves and checks if placing a piece there would be illegal or not 
+    returns a list of length 44 of 0s and 1s. 
+    '''
     # should need board, piece, possibilities
 
     pos_rotations, _ = POSSIBILITIES[piece_type]
