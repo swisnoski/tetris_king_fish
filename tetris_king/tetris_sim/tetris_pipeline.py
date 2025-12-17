@@ -3,9 +3,18 @@ from .tetris_max import find_best_move
 import numpy as np
 
 
+'''
+this is the tetris model that can be fully integrated into the arm 
+rather than looping, it can be created, execute moves to keep track of the internal board,
+and update pieces given infomation from the CV 
+'''
 
 class Tetris_PIPE(Tetris):
     def __init__(self):
+        '''
+        again, we want to redefine our initialization with (basically) 
+        all of the same variables in order to remove pygame functionality 
+        '''
         # super().__init__()
         self.lines_cleared = 0
         self.iteration = 0
@@ -39,6 +48,11 @@ class Tetris_PIPE(Tetris):
 
 
     def update_piece(self, type):
+        '''
+        takes in a peice type (singular string that represents a tetris block)
+        rather than generating our pieces randomly, the CV function 
+        will tell us what our next piece will be 
+        '''
         # create a new piece
         self.current_piece = Piece(type)
         spawn_location = LOCATIONS[type]
@@ -48,6 +62,14 @@ class Tetris_PIPE(Tetris):
 
 
     def execute_moves(self, r, t):
+         '''
+        given a rotation (int between 0 and 3) and a 
+        translation (int between -5 and 5), we rotate and 
+        move our current piece accordingly. Once above it's desired spot, we 
+        then drop it down. Each of these actions is contingent on the timer 
+
+        this function also places the block and checks for tetrises
+        '''
         self.current_piece.rotate(n_rotations=r)
         self.piece_x += t
 
