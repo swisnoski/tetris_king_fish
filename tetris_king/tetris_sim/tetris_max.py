@@ -4,6 +4,8 @@ import pygame
 import sys
 
 
+
+# define possibilites for each piece 
 POSSIBILITIES = {
     "I": (range(2), range(-4, 6, 1)),
     "T": (range(4), range(-4, 5, 1)),
@@ -16,22 +18,48 @@ POSSIBILITIES = {
 
 
 class Tetris_MAX(Tetris):
+    '''
+    tetris_max is designed to use a simple heurstic to make it's moves 
+    it inherits from our base tetris class and keeps most of it's 
+    original logic, but swaps out the ability to play tetris with 
+    an automover 
+    '''
     def __init__(self):
+        '''
+        initalizing all our varaibles 
+        we need to add a move_time to determine 
+        the length between each move our algorithm decides 
+        one move = one rotation or one left/right/down movement 
+        '''
         super().__init__()
         self.last_move_time = 0
         self.MOVETIME = 100
         self.iteration = 0
 
     def auto_loop(self):
+        '''
+        our "auto_loop" function
+        first, we spawn a new peice 
+        then, we find the best possible move given our new piece and the current board state 
+        lastly, we execute that move to update our board state 
+        '''
         while True:
             self.spawn_piece()
-            print(self.board)
+            # print(self.board)
             r, t = find_best_move(self.board, self.current_piece.type)
 
             # print(t, r)
             self.execute_moves(r, t)  # display_board is called within this function
 
     def execute_moves(self, r, t):
+        '''
+        given a rotation (int between 0 and 3) and a 
+        translation (int between -5 and 5), we rotate and 
+        move our current piece accordingly. Once above it's desired spot, we 
+        then drop it down. Each of these actions is contingent on the timer 
+
+        this function places the block, checks for tetrises, and updates the screen 
+        '''
         # loop until
         piece_in_place = False
         while piece_in_place is False:
@@ -81,6 +109,18 @@ class Tetris_MAX(Tetris):
 
 
 def detect_collision_normal(board, piece, x, y):
+    ''' 
+    function to detect a collision between the current piece and 
+    the board state. if it detections a collision between a currently placed
+    piece, the wall, or the floor, it returns TRUE
+
+    it can also take in an offset (as integers), which is needed as you move the 
+    peice in one direction or the other 
+        
+    basically a copy of the class function defined in tetris.py 
+
+    however, it can be used outside of the class 
+    '''
     for i in range(piece.height):
         for j in range(piece.width):
             if piece.blocks[i][j] == 1:
@@ -90,6 +130,22 @@ def detect_collision_normal(board, piece, x, y):
 
 
 def score_board(board, HEIGHT=20, WIDTH=10):
+    '''
+    takes in a tetris board (numpy array and returns a score 
+    it scores the board based on four variables: 
+    1. number of holes
+    2. bumpiness of the surface 
+    3. how high the blocks have gotten 
+    4. if placing the block creates a tetris (or tetrises) 
+
+    each of these has a designated weight as shown below: 
+    score = (
+        (total_height * -0.510066)
+        + (lines_cleared * 0.760666)
+        + (holes * -0.35663)
+        + (bumpiness * -0.184483)
+    )
+    '''
     holes = 0
     hole_detector = False
     col_heights = []
@@ -140,6 +196,16 @@ def score_board(board, HEIGHT=20, WIDTH=10):
 
 
 def find_best_move(board, piece_type):
+    '''
+    this functions iterates through all possibilites given 
+    a board (a numpy array) and a given piece type (string, single leter 
+    representing a tetris piece). 
+
+    pulling from the "possibilites" dict defined at the top of this file, 
+    we go through each rotation, then move the piece left and right, drop it, 
+    and calculate the score of the updated board. the highest score and the respective 
+    moves to achieve it are saved, and we eventually return the idea rotation and translation
+    '''
     # should need board, piece, possibilities
     top_score = -float("inf")
     run_score = 0
@@ -206,6 +272,10 @@ def find_best_move(board, piece_type):
 
 
 def main():
+    '''
+    main function, creates a tetris_max instance and then
+    loops it 
+    '''
     my_tetris_max = Tetris_MAX()
     my_tetris_max.auto_loop()
 
