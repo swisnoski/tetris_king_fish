@@ -10,11 +10,10 @@ from cv_tetris.cv_pipeline import initialize_video_capture, initialize_grid, get
 import random
 
 
-def most_frequent(List):
-    return max(set(List), key=List.count)
-
-
 def loop():
+    """
+    Overall loop to run program pipeline.
+    """
     # Connect to server
     SERVER_IP = "192.168.10.2"  # Change to server's IP
     SERVER_PORT = 5000
@@ -37,6 +36,7 @@ def loop():
             if current_piece is not None:
                 current_piece_list.append(current_piece)
                 game_state_current += game_state
+            # buffer to get last detected piece due to threading bug
             if len(current_piece_list) == 3:
                 current_piece = current_piece_list[-1]
                 game_state_current[game_state_current < 2] = 0
