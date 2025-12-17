@@ -3,7 +3,11 @@ import numpy as np
 import pygame
 import sys
 
-
+'''
+create a version of tetris (inherited from our original tetris class) 
+that will play tetris based on a predefined hueristic. should just 
+be able to run in a loop, and allows us to perfect our heuristic 
+'''
 
 # define possibilites for each piece 
 POSSIBILITIES = {
