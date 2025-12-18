@@ -7,7 +7,7 @@ Our system runs a superloop of three main components in this order: computer vis
   <em>Figure 1: System Pipeline</em>
 </p>
 
-##Computer Vision
+## Computer Vision
 
 The computer vision pipeline runs in this sequence:
 - Grid detection (*grid_detection.py*)
@@ -133,16 +133,3 @@ The main control script runs a continuous superloop that connects computer visio
 During each iteration of the loop, the computer vision pipeline detects the current game board and the falling piece from the camera feed. To improve reliability, the detected piece is buffered across multiple frames before being accepted. Once a stable detection is achieved, the camera-derived board state is compared against the internal Tetris board. If a mismatch is found, the internal board is overwritten to ensure the simulator remains synchronized with the real game.
 
 With the game state aligned, the simulator evaluates all possible placements for the current piece using a heuristic-based algorithm and selects the best move in terms of rotations and horizontal translations. This move is applied internally and then sent over the network to the Raspberry Pi, which commands the robotic arm to press the corresponding buttons on the controller. The loop then repeats, enabling fully autonomous, real-time gameplay.
-
-## Design Decisions
-
-**Computer Vision**
-
-One major design decision we made early on was to cut out the first step of screen detection, in order to reduce unneeded complexity with our image input. Instead, we position our webcam to largely only take in the player area we want to control.
-
-<p align="center">
-  <img src="../tetris_king/cv_tetris/gamescreen_test_assets/tetris_screen_final.png" alt="Input Frame for CV" width="40%">
-  <br>
-  <em>Input Frame for CV</em>
-</p>
-
