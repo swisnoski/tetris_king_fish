@@ -14,6 +14,11 @@ My YOGAs are largely related to increasing my knowledge of robotic systems, spec
 
 Looking back, I think I achieved exactly what I was looking for out of this project. I ended up working mainly on the tetris simulator, but also got to help occasionally with RL and CV. I ended up finishing the simulator ahead of schedule and was able to help debug in other areas, which is definitely a skill I've needed some practice with. 
 
+#### Satchel:
+My YOGAs are split amongst my two technical goals and my one nontechnical one. My first technical YOGA was “Prioritize integration of different scripts or systems to understand architecture design decisions and practice debugging”, which I chose to better understand the problems in robotic systems as compared to normal Python scripts. This project has 3 main subsystems which will allow me to work on integration, especially in going from CV and robotic manipulation, which I am more experienced in, to the reinforcement algorithm which I will get to learn and practice debugging. My second technical YOGA was to “develop a more robust understanding of CV and use cases in robotic systems, as I determined from previous classes and projects this would be an interesting/useful technical goal”. Working on identifying blocks in our algorithm and machine vision pipeline fills this really well, and offers an opportunity to take ownership of the block-detection and information encoding pipeline. My final YOGA, the nontechnical one, was to develop confidence in open-source libraries and learning new skills beyond what’s been taught to me in classes. Working with reinforcement learning for the algorithm fulfills this.
+
+Reflecting on this, I think the overscoped goal of the project gave me plenty of time and work on integration, and with that came a bit of learning and work on the other subsystems, which also aligned wiyth my learning goals. Working on CV and learning new techniques like HSV, Hough line transforms, and a bit more YOLO expierence, which also aligned with my goals.
+
 ## Who did what 
 
 #### Ashley:
@@ -24,6 +29,9 @@ I worked on the arm, made the arm hit buttons. This involved calculating the for
 
 #### Sam: 
 I built the tetris simulators (tetris, tetris_max, tetris_rl) in order to practice my systems coding skills and because I thought it would be a fun challenge. I also helped debug and assisted with integration, as we all did. 
+
+#### Satchel:
+I built the game grid detection, defined the overall vision pipeline, and worked with Ashley and Sam on integration. Ashley and I tested the camera system and different lightings, as well as determined what conditions we would use to play tetris. 
 
 ## Challenges 
 
