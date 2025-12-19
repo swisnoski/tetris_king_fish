@@ -4,7 +4,10 @@ import cv2 as cv
 
 def initialize_video_capture():
     """
-    Returns cv VideoCapture object, None is video source failed.
+    Initalize CV video capture.
+    
+    Returns:
+        cap: CV VideoCapture object, but None if video source failed.
     """
     # feed in video 
     cap = cv.VideoCapture(0)
@@ -22,9 +25,14 @@ def initialize_video_capture():
 
 def video_to_frame(cap):
     """
-    Helper function to return cv img frame to read from.
+    Helper function to return a CV image frame from a VideoCapture object.
 
-    frame: img numpy frame
+    Args:
+        cap: CV VideoCapture object containing live feed.
+    
+    Returns:
+        ret: a boolean indicating succesful read.
+        frame: the CV img numpy frame.
     """
     # UNCOMMENT FOR RECORDED VID TESTING ONLY: skips to go 10 frames at a time
     # for _ in range(10):
@@ -45,7 +53,11 @@ def initialize_grid(cap):
     """
     Initialize grid corners and cells coordinates, waits for approval of user hitting 'g'.
 
-    Returns list of tuples representing four detected gameplay grid corners
+    Args:
+        cap: CV VideoCapture object containing live feed.
+
+    Returns:
+        grid_pts: a list of tuples representing four detected gameplay grid corners.
     """
     corner_pts = None
     grid_pts = None
@@ -81,16 +93,21 @@ def initialize_grid(cap):
             grid_pts = None
 
     return grid_pts
-    
+
 def get_cv_info(cap, grid_pts):
     """
-    Function called by game super loop that returns game_state matrix and current_piece.
+    Retrieve the current game state matrix and detected piece.
+
+    Calls the game-state logic to obtain the current board matrix and the
+    currently detected piece for use in the main program loop.
 
     Args:
-    - cap: CV VideoCapture object
+        cap: CV VideoCapture object.
 
     Returns:
-    - tuple of game_state, current_piece
+        tuple: A tuple containing:
+            - game_state: 2D array representing the current game state.
+            - current_piece: String identifying the detected piece.
     """
     game_state = None
     current_piece = None
@@ -116,7 +133,10 @@ def get_grid(img):
     Helper function to just get the initialized grid, using manual grid corners.
 
     Args:
-    - img: opencv img numpy object 
+        img: opencv img numpy object.
+    
+    Returns:
+        check_grid: a 2D array of coordinates points of gameply grid cells to check.
     """
     pts = None
     # while pts is None:
@@ -134,6 +154,14 @@ def get_grid(img):
 def process_image(img):
     """
     Helper function for all things just needing an img, with game_state and fill detection.
+
+    Args:
+        img: opencv img numpy object.
+    
+    Returns:
+        tuple: A tuple containing:
+            - game_state: 2D array representing the current game state.
+            - current_piece: String identifying the detected piece.
     """
     # print("Got frame")
     # get grid_pts
@@ -148,9 +176,7 @@ def process_image(img):
 # --------------------------- TESTING FUNCTIONS -----------------------------------
 
 def test_frame():
-    """
-    Mock game system cv pipeline with image path, abstracting away model + arm.
-    """
+    """Test mock game system cv pipeline with image path, abstracting away model + arm."""
     img_path = "./assets/tetris_final.png" # test image path
 
     img = cv.imread(img_path)
@@ -161,13 +187,12 @@ def test_frame():
     return game_state, current_piece
 
 def test_video_once():
-    """
-    Mock game system cv pipeline testing to just get first frame from video feed.
-    """
+    """Test mock game system cv pipeline to just get first frame from video feed."""
     cap = initialize_video_capture()
     game_state, current_piece = get_cv_info(cap)
 
 def test_video_loop():
+    """Test mock game system cv pipeline continously from video feed."""
     cap = initialize_video_capture()
     try:
         while True:
@@ -182,6 +207,7 @@ def test_video_loop():
         cap.release()
 
 def test_new_video_loop():
+    """Test mock game system cv pipeline continously from video feed after refactoring."""
     cap = initialize_video_capture()
     try:
         grid_pts = initialize_grid(cap)

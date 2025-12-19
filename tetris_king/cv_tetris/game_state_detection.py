@@ -36,14 +36,15 @@ HSV_ALL_PIECES = {
 
 def initalize_matrix_fill(img, grid_pts):
     """
-    Calculates and returns coordinate pixel points to check for block fill, based on input
+    Calculate and return coordinate pixel points to check for block fill, based on input
     corners of the grid and known size. Intended to be run just once / periodically.
 
     Args: 
-        - a list of four coordinates points ex. [(x1, y1), (x2, y2), ...],
+        img: opencv img numpy object representing current frame to read from.
+        grid_pts: a list of four coordinates points ex. [(x1, y1), (x2, y2), ...].
 
     Returns:
-        - check_grid: a 2D array of tuples, representing the coordinate pixel points of the center of each grid cell
+        check_grid: a 2D array of tuples, representing the coordinate points of each grid cell's center.
     """
     # make grid of pixel coord pts to check screen image [[(x, y)]]
     check_grid = [[0 for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
@@ -83,13 +84,14 @@ def initalize_matrix_fill(img, grid_pts):
 
 def check_fill(img, check_grid):
     """
-    Checks the color of each grid cell by pixel coordinate to see if filled.
+    Check the color of each grid cell by pixel coordinate to see if filled or not.
 
     Args:
-    - check_grid: a 2D array of tuples, representing the coordinate pixel points of the center of each grid cell
+        check_grid: a 2D array of tuples, representing the coordinate points of each grid cell's center.
 
-    Returns
-     - output_grid: a 2D array of 0s and 1s (0 empty, 1 filled) ex. [[0, 0, 0],[0, 1, 0]], 2 is ghost
+    Returns:
+        game_state_grid: a filtered 2D array of 0s and 1s (0 empty, 1 filled) representing the game state.
+        grid_p: a pre-filtered 2D array of 0s and 1s (0 empty, 1 filled) representing the game state.
     """
     # populate this grid to hold 0 and 1's, should have 200 (grid cell count)
     game_state_grid = [[0 for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
@@ -148,6 +150,14 @@ def check_fill(img, check_grid):
 def get_current_piece(img, coords_grid, game_state_grid):
     """
     Detect and return what the current piece is.
+
+    Args:
+        img: opencv img numpy object representing current frame to read from.
+        coords_grid: a 2D array of tuples, representing the coordinate points of each grid cell's center.
+        game_state_grid: the pre-filtered 2D array of 0s and 1s (0 empty, 1 filled) representing the game state.
+
+    Returns:
+        current_piece: a String representing the detected tetromino piece.
     """
     # heuristic checking top 3 rows of screen for fill
     current_piece = None
@@ -170,10 +180,16 @@ def get_current_piece(img, coords_grid, game_state_grid):
     # return current_piece (either None is no detection, or classified)
     return current_piece
 
-def classify_cell_color(bgr_color, color_map) -> str:
+def classify_cell_color(bgr_color, color_map):
     """
-    Finds closest color in HSV_COLOR_MAP using HSV squared distance.
-    Returns color name or None.
+    Find closest color in HSV_COLOR_MAP using HSV squared distance.
+
+    Args:
+        bgr_color: a NumPy array of the target pixel's BGR color values.
+        color_map: a dict representing the HSV reference values for each tetromino piece.
+
+    Returns:
+        closest_name: a String representing the closest tetronimo match, or None.
     """
     # Convert BGR pixel → HSV
     hsv_pixel = cv.cvtColor(
@@ -211,9 +227,10 @@ def bfs(x_og, y_og, grid):
     Args:
         x_og: an int representing the starting x coordinate of island
         y_og: an int representing the starting y coordinate of island
+        grid: a 2D array of 0s and 1s (0 empty, 1 filled) representing the game state being modified.
 
     Returns:
-        coordinates representing
+        curr_coords: a list of tuples representing coordinates to be flipped to be 0 (unfilled).
     """
     queue = [(x_og, y_og)]
     visited = []
@@ -249,20 +266,32 @@ def bfs(x_og, y_og, grid):
 
 def hsv_distance(hsv1, hsv2, wH=8, wV=1):
     """
-    Helper function to calculate distance between two pixel's HSV values, excluding Saturdation,
-    with weights given to Hue and Value.
+    Helper function to calculate distance between two pixel's HSV values.
+    
+    Excludes Saturdation, with weights given to Hue and Value.
+
+    Args:
+        hsv1: Numpy array holding HSV values of target pixel.
+        hsv2: Numpy array holding HSV values of reference pixel.
+        wH: int representing weight given to Hue value.
+        wV: int representing weight given to Value value.
+    
+    Returns:
+        distance: the weighted total calculation of difference between HSV values., 
     """
     dh = min(abs(hsv1[0] - hsv2[0]), 180 - abs(hsv1[0] - hsv2[0]))  # hue wrap-around
     ds = hsv1[1] - hsv2[1]
     dv = hsv1[2] - hsv2[2]
-    return wH * dh * dh + wV * dv * dv
+    distance = wH * dh * dh + wV * dv * dv
+    return distance
 
 def show_close(caption, img):
     """
     Helper function to simplify repeated showing and closing of cv windows.
 
-    caption: a string for the img caption
-    img: CV image to show
+    Args:
+        caption: a string for the img caption.
+        img: CV image to show.
     """
     # handle showing and close operations
     cv.imshow(caption, img) # overwrites previous img of same name if exists
